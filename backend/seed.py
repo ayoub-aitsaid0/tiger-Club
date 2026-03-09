@@ -140,6 +140,9 @@ def build_tables():
     return tables
 
 with app.app_context():
+    print("Ensuring database tables exist...")
+    db.create_all()
+
     print("Clearing tables...")
     db.session.query(AuditLog).delete()
     db.session.query(Reservation).delete()
