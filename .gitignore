@@ -1,0 +1,26 @@
+# Dependency directories
+node_modules/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# IDEs and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Docker
+postgres_data/
