@@ -106,14 +106,21 @@ def list_reservations():
 
 
 @reservations_bp.route("/<int:res_id>", methods=["PATCH"])
-@admin_required
+@jwt_required()
 def update_reservation(res_id):
     user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
     reservation = Reservation.query.get_or_404(res_id)
+
+    if user.role != "admin" and reservation.created_by_user_id != user_id:
+        return jsonify({"error": "Accès refusé – réservation non autorisée"}), 403
+
     old_data = reservation.to_dict()
 
     data = request.get_json()
-    for field in ["customer_name", "customer_phone", "total_price", "advance_paid", "payment_method", "status", "notes"]:
+    allowed_fields = ["customer_name", "customer_phone", "total_price", "advance_paid", "payment_method", "status", "notes"]
+    # Caissier cannot change status to anything other than occupied/reserved/cancelled
+    for field in allowed_fields:
         if field in data:
             setattr(reservation, field, data[field])
 
@@ -131,10 +138,15 @@ def update_reservation(res_id):
 
 
 @reservations_bp.route("/<int:res_id>", methods=["DELETE"])
-@admin_required
+@jwt_required()
 def cancel_reservation(res_id):
     user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
     reservation = Reservation.query.get_or_404(res_id)
+
+    if user.role != "admin" and reservation.created_by_user_id != user_id:
+        return jsonify({"error": "Accès refusé – réservation non autorisée"}), 403
+
     old_data = reservation.to_dict()
 
     reservation.status = "cancelled"

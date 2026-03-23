@@ -38,7 +38,7 @@ class Table(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     table_number = db.Column(db.String(20), unique=True, nullable=False)
-    zone_type = db.Column(db.String(20), nullable=False)  # VIP | Stage | Simple
+    zone_type = db.Column(db.String(20), nullable=False)  # Orange | Teal | Grey | Purple | White
     coordinates_json = db.Column(JSON, nullable=False, default=dict)
     capacity = db.Column(db.Integer, default=4)
 
@@ -70,9 +70,14 @@ class Reservation(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
+        table_numbers = [
+            t.table_number for t in
+            Table.query.filter(Table.id.in_(self.table_ids or [])).all()
+        ]
         return {
             "id": self.id,
             "table_ids": self.table_ids,
+            "table_numbers": table_numbers,
             "customer_name": self.customer_name,
             "customer_phone": self.customer_phone,
             "total_price": float(self.total_price),

@@ -10,7 +10,7 @@ export interface AppUser {
 export interface TableStatus {
     id: number;
     table_number: string;
-    zone_type: 'VIP' | 'Stage' | 'Simple';
+    zone_type: 'Orange' | 'Teal' | 'Grey' | 'Purple' | 'White';
     coordinates: { x: number; y: number; w: number; h: number };
     capacity: number;
     status: 'free' | 'reserved' | 'occupied';

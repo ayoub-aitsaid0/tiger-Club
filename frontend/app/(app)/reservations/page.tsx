@@ -8,6 +8,7 @@ import { Calendar, Search, X } from 'lucide-react';
 interface Reservation {
     id: number;
     table_ids: number[];
+    table_numbers: string[];
     customer_name: string;
     customer_phone: string;
     total_price: number;
@@ -16,6 +17,7 @@ interface Reservation {
     date_reservation: string;
     status: string;
     notes: string;
+    created_by_user_id: number;
     created_by_username: string;
     created_at: string;
 }
@@ -122,7 +124,7 @@ export default function ReservationsPage() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                         <thead>
                             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                                {['Tables', 'Client', 'Téléphone', 'Date', 'Prix', 'Avance', 'Paiement', 'Statut', 'Caissier', user?.role === 'admin' ? 'Actions' : ''].filter(Boolean).map(h => (
+                                {['Tables', 'Client', 'Téléphone', 'Date', 'Prix', 'Avance', 'Paiement', 'Statut', 'Caissier', 'Actions'].map(h => (
                                     <th key={h} style={{ padding: '12px 14px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                                 ))}
                             </tr>
@@ -138,7 +140,7 @@ export default function ReservationsPage() {
                                     <tr key={r.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.1s' }}
                                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
                                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                        <td style={{ padding: '11px 14px', fontWeight: 600, color: '#f97316' }}>#{r.table_ids?.join(', ')}</td>
+                                        <td style={{ padding: '11px 14px', fontWeight: 600, color: '#f97316' }}>{r.table_numbers?.join(', ') || r.table_ids?.join(', ')}</td>
                                         <td style={{ padding: '11px 14px', fontWeight: 500 }}>{r.customer_name}</td>
                                         <td style={{ padding: '11px 14px', color: 'var(--text-secondary)' }}>{r.customer_phone || '—'}</td>
                                         <td style={{ padding: '11px 14px', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
@@ -155,22 +157,27 @@ export default function ReservationsPage() {
                                             <span style={{ fontSize: '0.7rem', padding: '3px 8px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
                                         </td>
                                         <td style={{ padding: '11px 14px', color: 'var(--text-muted)' }}>{r.created_by_username}</td>
-                                        {user?.role === 'admin' && (
-                                            <td style={{ padding: '11px 14px' }}>
-                                                <div style={{ display: 'flex', gap: 6 }}>
-                                                    <button onClick={() => { setEditRes(r); setEditForm(r); }}
-                                                        style={{ padding: '4px 10px', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, color: '#f97316', cursor: 'pointer', fontSize: '0.75rem' }}>
-                                                        Modifier
-                                                    </button>
-                                                    {r.status !== 'cancelled' && (
-                                                        <button onClick={() => handleCancel(r.id)}
-                                                            style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, color: '#ef4444', cursor: 'pointer', fontSize: '0.75rem' }}>
-                                                            Annuler
-                                                        </button>
+                                        {(() => {
+                                            const canEdit = user?.role === 'admin' || r.created_by_user_id === user?.id;
+                                            return (
+                                                <td style={{ padding: '11px 14px' }}>
+                                                    {canEdit && (
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            <button onClick={() => { setEditRes(r); setEditForm(r); }}
+                                                                style={{ padding: '4px 10px', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, color: '#f97316', cursor: 'pointer', fontSize: '0.75rem' }}>
+                                                                Modifier
+                                                            </button>
+                                                            {r.status !== 'cancelled' && (
+                                                                <button onClick={() => handleCancel(r.id)}
+                                                                    style={{ padding: '4px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, color: '#ef4444', cursor: 'pointer', fontSize: '0.75rem' }}>
+                                                                    Annuler
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
-                                                </div>
-                                            </td>
-                                        )}
+                                                </td>
+                                            );
+                                        })()}
                                     </tr>
                                 );
                             })}

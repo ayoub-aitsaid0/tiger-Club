@@ -5,23 +5,25 @@ import api from '@/lib/api';
 import { useAppStore, TableStatus } from '@/lib/store';
 import ReservationModal from '@/components/ReservationModal';
 import toast from 'react-hot-toast';
-import { Link2, Link2Off, RefreshCw, Calendar } from 'lucide-react';
+import { Link2, Link2Off, RefreshCw, Calendar, X } from 'lucide-react';
 
-// Konva must be loaded client-side only
 const FloorMap = dynamic(() => import('@/components/FloorMap'), { ssr: false });
 
 const LEGEND = [
-    { label: 'Libre', color: '#22c55e' },
-    { label: 'Réservé', color: '#ef4444' },
-    { label: 'Occupé', color: '#eab308' },
-    { label: 'VIP', color: '#a855f7' },
-    { label: 'Scène', color: '#6dbfa0' },
-    { label: 'Simple', color: '#f97316' },
+    { label: 'Libre',   color: '#c8a84b' },
+    { label: 'Réservé', color: '#dc2626' },
+    { label: 'Occupé',  color: '#d97706' },
+    { label: 'VIP',     color: '#7c3aed' },
 ];
 
 export default function PlanPage() {
-    const { selectedDate, setSelectedDate, tableStatuses, setTableStatuses, linkMode, toggleLinkMode, linkedTables, clearLinkedTables } = useAppStore();
-    const [loading, setLoading] = useState(false);
+    const {
+        selectedDate, setSelectedDate,
+        tableStatuses, setTableStatuses,
+        linkMode, toggleLinkMode,
+        linkedTables, clearLinkedTables,
+    } = useAppStore();
+    const [loading, setLoading]         = useState(false);
     const [modalTables, setModalTables] = useState<TableStatus[] | null>(null);
 
     const fetchStatuses = useCallback(async () => {
@@ -40,17 +42,19 @@ export default function PlanPage() {
 
     const handleTableClick = (table: TableStatus) => {
         if (table.status !== 'free') {
-            toast.error(`Table ${table.table_number} est déjà ${table.status === 'reserved' ? 'réservée' : 'occupée'}`);
+            toast.error(
+                `Table ${table.table_number} est déjà ${table.status === 'reserved' ? 'réservée' : 'occupée'}`
+            );
             return;
         }
         setModalTables([table]);
     };
 
     const handleGroupReserve = () => {
-        const selected = tableStatuses.filter(t => linkedTables.includes(t.id));
-        const nonFree = selected.filter(t => t.status !== 'free');
+        const selected = tableStatuses.filter((t: TableStatus) => linkedTables.includes(t.id));
+        const nonFree  = selected.filter((t: TableStatus) => t.status !== 'free');
         if (nonFree.length > 0) {
-            toast.error(`Table(s) ${nonFree.map(t => t.table_number).join(', ')} non disponible(s)`);
+            toast.error(`Table(s) ${nonFree.map((t: TableStatus) => t.table_number).join(', ')} non disponible(s)`);
             return;
         }
         if (selected.length === 0) { toast.error('Sélectionnez au moins une table'); return; }
@@ -58,107 +62,133 @@ export default function PlanPage() {
     };
 
     return (
-        <div style={{ display: 'flex', height: '100%', background: 'var(--bg-primary)', overflow: 'hidden' }}>
-            {/* Left Part: FloorMap */}
-            <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: 10 }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', background: '#1A1410' }}>
+
+            {/* ── MAP (full screen) ───────────────────────────────── */}
+            <div style={{ position: 'absolute', inset: 0 }}>
                 {tableStatuses.length > 0 ? (
                     <FloorMap tables={tableStatuses} onTableClick={handleTableClick} />
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        height: '100%', color: '#c8a84b', fontSize: '0.9rem', letterSpacing: '0.05em',
+                    }}>
                         {loading ? 'Chargement du plan...' : 'Aucune donnée disponible'}
                     </div>
                 )}
             </div>
 
-            {/* Right Sidebar: Controls */}
+            {/* ── OVERLAY CONTROL BAR (top) ───────────────────────── */}
             <div style={{
-                width: 300,
-                borderLeft: '1px solid var(--border)',
-                background: 'var(--bg-secondary)',
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '24px 20px',
-                gap: 28,
-                overflowY: 'auto'
+                position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'rgba(8,8,14,0.82)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(200,168,75,0.2)',
+                borderRadius: 12,
+                padding: '6px 12px',
+                zIndex: 20,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+                flexWrap: 'wrap',
+                maxWidth: 'calc(100vw - 40px)',
             }}>
-                <div>
-                    <h1 style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-primary)', marginBottom: 4 }}>Plan de Salle</h1>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Gérez vos réservations en temps réel</p>
+                {/* Date picker */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: 'rgba(200,168,75,0.07)',
+                    border: '1px solid rgba(200,168,75,0.18)',
+                    borderRadius: 7, padding: '5px 10px', cursor: 'pointer',
+                }}>
+                    <Calendar size={12} color="#c8a84b" />
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e: { target: { value: string } }) => setSelectedDate(e.target.value)}
+                        style={{
+                            background: 'transparent', border: 'none',
+                            color: '#f5e6b8', fontSize: '0.78rem', outline: 'none',
+                            cursor: 'pointer', fontFamily: 'inherit',
+                        }}
+                    />
                 </div>
 
-                {/* Date Picker Section */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Date de Réservation</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '10px 14px' }}>
-                        <Calendar size={18} color="#f97316" />
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={e => setSelectedDate(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', cursor: 'pointer', width: '100%' }}
-                        />
-                    </div>
-                </div>
+                <div style={{ width: 1, height: 16, background: 'rgba(200,168,75,0.15)', flexShrink: 0 }} />
 
-                {/* Actions Section */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</label>
+                {/* Link-mode toggle */}
+                <button onClick={toggleLinkMode} style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '5px 10px', borderRadius: 7, border: '1px solid',
+                    cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
+                    background:  linkMode ? 'rgba(249,115,22,0.15)' : 'transparent',
+                    borderColor: linkMode ? '#f97316'               : 'rgba(200,168,75,0.2)',
+                    color:       linkMode ? '#f97316'               : '#c8a84b',
+                    transition: 'all 0.18s', whiteSpace: 'nowrap',
+                }}>
+                    {linkMode ? <Link2 size={12} /> : <Link2Off size={12} />}
+                    {linkMode ? 'Lier ON' : 'Mode Lier'}
+                </button>
 
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={toggleLinkMode} style={{
-                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            padding: '12px', borderRadius: 12, border: '1px solid', cursor: 'pointer',
-                            fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
-                            background: linkMode ? 'rgba(249,115,22,0.1)' : 'var(--bg-card)',
-                            borderColor: linkMode ? '#f97316' : 'var(--border)',
-                            color: linkMode ? '#f97316' : 'var(--text-primary)',
-                        }}>
-                            {linkMode ? <Link2 size={16} /> : <Link2Off size={16} />}
-                            {linkMode ? 'Lier Activé' : 'Mode Lier'}
-                        </button>
+                {/* Refresh */}
+                <button onClick={fetchStatuses} disabled={loading} style={{
+                    width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'transparent', border: '1px solid rgba(200,168,75,0.18)',
+                    borderRadius: 7, cursor: 'pointer', color: '#c8a84b', flexShrink: 0,
+                }}>
+                    <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                </button>
 
-                        <button onClick={fetchStatuses} disabled={loading} style={{
-                            width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, cursor: 'pointer', color: 'var(--text-secondary)'
-                        }}>
-                            <RefreshCw size={18} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-                        </button>
-                    </div>
+                <div style={{ width: 1, height: 16, background: 'rgba(200,168,75,0.15)', flexShrink: 0 }} />
 
-                    {linkMode && linkedTables.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-                            <button onClick={handleGroupReserve} style={{
-                                width: '100%', padding: '14px', borderRadius: 12, background: 'linear-gradient(135deg,#f97316,#ea580c)',
-                                border: 'none', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer',
-                                boxShadow: '0 4px 16px rgba(249,115,22,0.3)',
-                            }}>
-                                Réserver {linkedTables.length} table{linkedTables.length > 1 ? 's' : ''}
-                            </button>
-                            <button onClick={clearLinkedTables} style={{
-                                width: '100%', padding: '10px', borderRadius: 12, background: 'transparent',
-                                border: '1px solid var(--border)', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem'
-                            }}>
-                                Annuler la sélection
-                            </button>
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    {LEGEND.map(({ label, color }) => (
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
+                            <span style={{ fontSize: '0.65rem', color: '#70718a', whiteSpace: 'nowrap' }}>{label}</span>
                         </div>
-                    )}
-                </div>
-
-                {/* Legend Section */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 'auto' }}>
-                    <label style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Légende</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        {LEGEND.map(({ label, color }) => (
-                            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 12, height: 12, borderRadius: 4, background: color, boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</span>
-                            </div>
-                        ))}
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Reservation modal */}
+            {/* ── Floating link-mode action bar (bottom) ──────────── */}
+            {linkMode && linkedTables.length > 0 && (
+                <div style={{
+                    position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+                    display: 'flex', gap: 10, alignItems: 'center',
+                    background: 'rgba(8,8,14,0.96)',
+                    border: '1px solid rgba(249,115,22,0.45)',
+                    borderRadius: 12, padding: '10px 18px',
+                    zIndex: 30,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 24px rgba(249,115,22,0.15)',
+                    whiteSpace: 'nowrap',
+                }}>
+                    <span style={{ fontSize: '0.78rem', color: '#c8a84b', fontWeight: 600 }}>
+                        {linkedTables.length} table{linkedTables.length > 1 ? 's' : ''} sélectionnée{linkedTables.length > 1 ? 's' : ''}
+                    </span>
+
+                    <button onClick={clearLinkedTables} style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '6px 10px', background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7,
+                        color: '#64748b', cursor: 'pointer', fontSize: '0.75rem',
+                    }}>
+                        <X size={11} /> Annuler
+                    </button>
+
+                    <button onClick={handleGroupReserve} style={{
+                        padding: '8px 18px', borderRadius: 8,
+                        background: 'linear-gradient(135deg,#f97316,#ea580c)',
+                        border: 'none', color: '#fff', fontWeight: 700,
+                        fontSize: '0.85rem', cursor: 'pointer',
+                        boxShadow: '0 4px 16px rgba(249,115,22,0.45)',
+                    }}>
+                        Réserver {linkedTables.length} table{linkedTables.length > 1 ? 's' : ''}
+                    </button>
+                </div>
+            )}
+
+            {/* ── Reservation Modal ───────────────────────────────── */}
             {modalTables && (
                 <ReservationModal
                     tables={modalTables}
