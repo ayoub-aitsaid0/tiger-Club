@@ -3,7 +3,9 @@ import { useState, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Move, Check, X, RefreshCw, MousePointerClick, Info } from 'lucide-react';
+import { Plus, Trash2, Move, Check, X, RefreshCw, MousePointerClick, Info, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import type { AdminTable, NewTableDraft } from '@/components/AdminFloorMap';
 
 const AdminFloorMap = dynamic(() => import('@/components/AdminFloorMap'), { ssr: false });
@@ -67,6 +69,7 @@ const S = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AdminTablesPage() {
+    const { t } = useTranslation();
     const [tables, setTables]       = useState<AdminTable[]>([]);
     const [loading, setLoading]     = useState(true);
     const [saving, setSaving]       = useState(false);
@@ -95,11 +98,11 @@ export default function AdminTablesPage() {
             const { data } = await api.get('/tables/');
             setTables(data);
         } catch {
-            toast.error('Impossible de charger les tables');
+            toast.error(t('adminTables.messages.loadError'));
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [t]);
 
     useEffect(() => { fetchTables(); }, [fetchTables]);
 
@@ -121,7 +124,7 @@ export default function AdminTablesPage() {
         try {
             await api.put(`/tables/${id}`, { x, y });
         } catch {
-            toast.error('Erreur lors de la sauvegarde de la position');
+            toast.error(t('adminTables.messages.savePositionError'));
             fetchTables(); // revert optimistic update
         } finally {
             setSaving(false);
@@ -131,7 +134,7 @@ export default function AdminTablesPage() {
     /** Called when admin clicks on the canvas in placement mode */
     const handlePlaceTable = async (x: number, y: number) => {
         if (!newForm.table_number.trim()) {
-            toast.error('Veuillez saisir un numéro de table');
+            toast.error(t('adminTables.messages.numberRequired'));
             return;
         }
         try {
@@ -146,10 +149,10 @@ export default function AdminTablesPage() {
             setTables(prev => [...prev, data]);
             setPlacementMode(false);
             setNewForm(f => ({ ...f, table_number: '' }));
-            toast.success(`Table "${data.table_number}" créée`);
+            toast.success(t('adminTables.messages.createSuccess', { table_number: data.table_number }));
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-            toast.error(msg || 'Erreur lors de la création');
+            toast.error(msg || t('adminTables.messages.createError'));
         }
     };
 
@@ -169,26 +172,26 @@ export default function AdminTablesPage() {
                 t.id === selectedTable.id ? { ...t, ...editForm } : t
             ));
             setSelectedTable(prev => prev ? { ...prev, ...editForm } : prev);
-            toast.success('Table mise à jour');
+            toast.success(t('adminTables.messages.updateSuccess'));
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-            toast.error(msg || 'Erreur mise à jour');
+            toast.error(msg || t('adminTables.messages.updateError'));
         }
     };
 
     /** Delete selected table */
     const handleDeleteTable = async () => {
         if (!selectedTable) return;
-        if (!confirm(`Supprimer la table "${selectedTable.table_number}" ?\nCette action est irréversible.`)) return;
+        if (!confirm(t('adminTables.messages.deleteConfirm', { table_number: selectedTable.table_number }))) return;
         try {
             await api.delete(`/tables/${selectedTable.id}`);
             setTables(prev => prev.filter(t => t.id !== selectedTable.id));
             setSelectedTable(null);
             setEditForm(null);
-            toast.success('Table supprimée');
+            toast.success(t('adminTables.messages.deleteSuccess'));
         } catch (err: unknown) {
             const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-            toast.error(msg || 'Impossible de supprimer (réservations actives ?)');
+            toast.error(msg || t('adminTables.messages.deleteError'));
         }
     };
 
@@ -201,10 +204,15 @@ export default function AdminTablesPage() {
 
     // ── Render ───────────────────────────────────────────────────────────────
     return (
-        <div style={{
-            height: '100vh', display: 'flex', flexDirection: 'column',
-            overflow: 'hidden', background: '#08080e',
-        }}>
+        <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            style={{
+                height: '100vh', display: 'flex', flexDirection: 'column',
+                overflow: 'hidden', background: 'var(--bg-primary)'
+            }}
+        >
 
             {/* ── Top bar ──────────────────────────────────────────────── */}
             <div style={{
@@ -214,24 +222,23 @@ export default function AdminTablesPage() {
                 borderBottom: '1px solid rgba(200,168,75,0.18)',
                 zIndex: 20,
             }}>
-                <span style={{
+                <span className="luxury-text" style={{
                     fontWeight: 900, fontSize: '0.95rem', letterSpacing: '0.12em',
-                    background: 'linear-gradient(135deg,#f5e6b8,#c8a84b)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    whiteSpace: 'nowrap',
+                    whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6
                 }}>
-                    ÉDITEUR DE PLAN
+                    <Sparkles size={14} color="#f5e6b8" />
+                    {t('adminTables.title')}
                 </span>
 
                 <div style={{ width: 1, height: 18, background: 'rgba(200,168,75,0.2)', flexShrink: 0 }} />
 
                 <span style={{ fontSize: '0.72rem', color: '#4a4a5a', whiteSpace: 'nowrap' }}>
-                    {tables.length} tables • Glissez pour repositionner
+                    {t('adminTables.subtitle', { count: tables.length })}
                 </span>
 
                 {saving && (
                     <span style={{ fontSize: '0.7rem', color: '#c8a84b', marginLeft: 4 }}>
-                        Sauvegarde…
+                        {t('adminTables.saving')}
                     </span>
                 )}
 
@@ -241,7 +248,7 @@ export default function AdminTablesPage() {
                     border: '1px solid rgba(200,168,75,0.22)', borderRadius: 7,
                     color: '#c8a84b', cursor: 'pointer', fontSize: '0.78rem', whiteSpace: 'nowrap',
                 }}>
-                    <RefreshCw size={12} /> Actualiser
+                    <RefreshCw size={12} /> {t('adminTables.refresh')}
                 </button>
             </div>
 
@@ -260,25 +267,25 @@ export default function AdminTablesPage() {
                     {/* ── NEW TABLE ─────────────────────────────────────── */}
                     <div style={{ marginBottom: 20 }}>
                         <div style={{ ...S.section, color: '#c8a84b' }}>
-                            <Plus size={12} /> NOUVELLE TABLE
+                            <Plus size={12} /> {t('adminTables.newTable')}
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
                             {/* Numéro */}
                             <div>
-                                <label style={S.label}>NUMÉRO</label>
+                                <label style={S.label}>{t('adminTables.fields.number')}</label>
                                 <input
                                     style={S.input}
                                     value={newForm.table_number}
                                     onChange={e => setNewForm(f => ({ ...f, table_number: e.target.value }))}
-                                    placeholder="ex: 52, VIP5, 08C…"
+                                    placeholder={t('adminTables.placeholders.number')}
                                 />
                             </div>
 
                             {/* Zone */}
                             <div>
-                                <label style={S.label}>ZONE / COULEUR</label>
+                                <label style={S.label}>{t('adminTables.fields.zone')}</label>
                                 <select
                                     style={{ ...S.input, cursor: 'pointer' }}
                                     value={newForm.zone_type}
@@ -297,7 +304,7 @@ export default function AdminTablesPage() {
 
                             {/* Capacité */}
                             <div>
-                                <label style={S.label}>CAPACITÉ</label>
+                                <label style={S.label}>{t('adminTables.fields.capacity')}</label>
                                 <input
                                     type="number" min={1} max={30}
                                     style={S.input}
@@ -308,7 +315,7 @@ export default function AdminTablesPage() {
 
                             {/* Taille */}
                             <div>
-                                <label style={S.label}>TAILLE</label>
+                                <label style={S.label}>{t('adminTables.fields.size')}</label>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                     {SIZE_PRESETS.map(p => (
                                         <button
@@ -358,7 +365,7 @@ export default function AdminTablesPage() {
                             <button
                                 onClick={() => {
                                     if (!newForm.table_number.trim()) {
-                                        toast.error('Entrez un numéro de table');
+                                        toast.error(t('adminTables.messages.enterNumber'));
                                         return;
                                     }
                                     setPlacementMode(p => !p);
@@ -381,8 +388,8 @@ export default function AdminTablesPage() {
                                 }}
                             >
                                 {placementMode
-                                    ? <><X size={13} /> Annuler le placement</>
-                                    : <><MousePointerClick size={13} /> Placer sur la carte</>
+                                    ? <><X size={13} /> {t('adminTables.actions.cancelPlacement')}</>
+                                    : <><MousePointerClick size={13} /> {t('adminTables.actions.placeOnMap')}</>
                                 }
                             </button>
 
@@ -396,8 +403,7 @@ export default function AdminTablesPage() {
                                 }}>
                                     <Move size={13} style={{ flexShrink: 0, marginTop: 1 }} />
                                     <span>
-                                        Déplacez le curseur sur le plan et <strong>cliquez</strong> pour
-                                        déposer la table à l'emplacement souhaité.
+                                        {t('adminTables.instructions.placement')}
                                     </span>
                                 </div>
                             )}
@@ -411,16 +417,16 @@ export default function AdminTablesPage() {
                             paddingTop: 16,
                         }}>
                             <div style={{ ...S.section, color: '#f97316' }}>
-                                <Info size={12} /> TABLE SÉLECTIONNÉE
+                                <Info size={12} /> {t('adminTables.selectedTable')}
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
 
                                 {/* Read-only info */}
                                 {([
-                                    ['Numéro',   selectedTable.table_number],
-                                    ['Position', `x = ${selectedTable.coordinates.x}   y = ${selectedTable.coordinates.y}`],
-                                    ['Taille',   `${selectedTable.coordinates.w} × ${selectedTable.coordinates.h}`],
+                                    [t('adminTables.fields.number'),   selectedTable.table_number],
+                                    [t('adminTables.fields.position'), `x = ${selectedTable.coordinates.x}   y = ${selectedTable.coordinates.y}`],
+                                    [t('adminTables.fields.size'),   `${selectedTable.coordinates.w} × ${selectedTable.coordinates.h}`],
                                 ] as [string, string][]).map(([k, v]) => (
                                     <div key={k}>
                                         <label style={S.label}>{k}</label>
@@ -438,7 +444,7 @@ export default function AdminTablesPage() {
 
                                 {/* Editable: zone */}
                                 <div>
-                                    <label style={S.label}>ZONE</label>
+                                    <label style={S.label}>{t('adminTables.fields.zone')}</label>
                                     <select
                                         style={{ ...S.input, cursor: 'pointer' }}
                                         value={editForm.zone_type}
@@ -456,7 +462,7 @@ export default function AdminTablesPage() {
 
                                 {/* Editable: capacity */}
                                 <div>
-                                    <label style={S.label}>CAPACITÉ</label>
+                                    <label style={S.label}>{t('adminTables.fields.capacity')}</label>
                                     <input
                                         type="number" min={1} max={30}
                                         style={S.input}
@@ -478,7 +484,7 @@ export default function AdminTablesPage() {
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                                         }}
                                     >
-                                        <Check size={12} /> Mettre à jour
+                                        <Check size={12} /> {t('adminTables.actions.update')}
                                     </button>
 
                                     <button
@@ -503,7 +509,7 @@ export default function AdminTablesPage() {
                             paddingTop: 14, marginTop: 4,
                             fontSize: '0.7rem', color: '#3a3a4a', textAlign: 'center', lineHeight: 1.6,
                         }}>
-                            Cliquez sur une table du plan pour la sélectionner et modifier ses propriétés.
+                            {t('adminTables.instructions.select')}
                         </div>
                     )}
                 </div>
@@ -515,7 +521,7 @@ export default function AdminTablesPage() {
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             height: '100%', color: '#c8a84b', fontSize: '0.9rem',
                         }}>
-                            Chargement du plan…
+                            {t('adminTables.loadingMap')}
                         </div>
                     ) : (
                         <AdminFloorMap
@@ -539,6 +545,6 @@ export default function AdminTablesPage() {
                 ::-webkit-scrollbar-track { background: transparent; }
                 ::-webkit-scrollbar-thumb { background: rgba(200,168,75,0.2); border-radius: 4px; }
             `}</style>
-        </div>
+        </motion.div>
     );
 }

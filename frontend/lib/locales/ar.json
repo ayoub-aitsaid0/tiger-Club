@@ -1,0 +1,291 @@
+{
+  "login": {
+    "title": "TIGER CLUB",
+    "subtitle": "نظام VIP",
+    "username": "اسم المستخدم",
+    "password": "كلمة المرور",
+    "submit": "دخول",
+    "loading": "تسجيل الدخول...",
+    "emptyFields": "الرجاء ملء جميع الحقول",
+    "error": "خطأ في تسجيل الدخول",
+    "welcome": "أهلاً بك، {{username}}!",
+    "footer": "Tiger Club"
+  },
+  "nav": {
+    "dashboard": "لوحة القيادة",
+    "reservations": "الحجوزات",
+    "plan": "مخطط القاعة",
+    "users": "المستخدمين",
+    "tables": "الطاولات",
+    "logs": "سجلات النظام"
+  },
+  "dashboard": {
+    "title": "لوحة القيادة",
+    "subtitle": "التحليلات",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر",
+    "reservations": "حجز",
+    "currency": "د.م.",
+    "advances": "العربون :",
+    "revenueTitle": "الإيرادات",
+    "cash": "نقداً",
+    "tpe": "بطاقة الائتمان",
+    "all": "الكل",
+    "daily": "أيام",
+    "weekly": "أسابيع",
+    "monthly": "أشهر",
+    "loading": "جارٍ تحميل البيانات...",
+    "noData": "لا توجد بيانات لهذه الفترة",
+    "cashTitle": "نقداً: {{amount}} د.م.",
+    "tpeTitle": "بطاقة الائتمان: {{amount}} د.م.",
+    "cashLegend": "نقداً",
+    "tpeLegend": "بطاقة الائتمان"
+  },
+  "reservations": {
+    "title": "الحجوزات",
+    "searchPlaceholder": "الاسم أو رقم الهاتف...",
+    "loading": "جارٍ التحميل...",
+    "noData": "لم يتم العثور على حجوزات",
+    "noPhone": "بدون رقم هاتف",
+    "table": "طاولة",
+    "advance": "عربون",
+    "status": {
+      "reserved": "محجوز",
+      "occupied": "مشغول",
+      "cancelled": "ملغى"
+    },
+    "stats": {
+      "total": "الإجمالي",
+      "reserved": "المحجوزة",
+      "revenue": "إجمالي الدخل"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "cancel": "إلغاء",
+      "save": "حفظ"
+    },
+    "prompts": {
+      "cancel": "هل تريد إلغاء هذا الحجز؟"
+    },
+    "messages": {
+      "loadError": "خطأ في تحميل الحجوزات",
+      "updateSuccess": "تم تحديث الحجز بنجاح",
+      "cancelSuccess": "تم إلغاء الحجز",
+      "error": "خطأ"
+    },
+    "tableHeaders": {
+      "tables": "الطاولات",
+      "client": "الزبون",
+      "phone": "رقم الهاتف",
+      "date": "التاريخ",
+      "price": "السعر",
+      "advance": "العربون",
+      "payment": "طريقة الدفع",
+      "status": "الحالة",
+      "cashier": "أمين الصندوق",
+      "actions": "إجراءات"
+    },
+    "payment": {
+      "cash": "نقداً",
+      "tpe": "بطاقة"
+    },
+    "modal": {
+      "title": "تعديل #{{id}}",
+      "clientName": "اسم الزبون",
+      "phone": "رقم الهاتف",
+      "status": "الحالة",
+      "totalPrice": "السعر الإجمالي (د.م)",
+      "advance": "العربون (د.م)",
+      "paymentMethod": "طريقة الدفع",
+      "notes": "ملاحظات"
+    }
+  },
+  "plan": {
+    "loading": "جارٍ تحميل المخطط...",
+    "noData": "لا توجد بيانات متاحة",
+    "legend": {
+      "free": "متاح",
+      "reserved": "محجوز",
+      "occupied": "مشغول",
+      "vip": "VIP"
+    },
+    "status": {
+      "reserved": "محجوزة",
+      "occupied": "مشغولة"
+    },
+    "linkMode": {
+      "on": "ربط مفعّل",
+      "off": "وضع الربط"
+    },
+    "selectedTables": "طاولة محددة",
+    "selectedTablesPlural": "طاولات محددة",
+    "actions": {
+      "cancel": "إلغاء",
+      "reserve": "حجز طاولة واحدة",
+      "reservePlural": "حجز {{count}} طاولات"
+    },
+    "messages": {
+      "loadError": "تعذر تحميل المخطط",
+      "alreadyTaken": "الطاولة {{number}} {{status}} بالفعل",
+      "tablesNotAvailable": "الطاولات {{tables}} غير متاحة",
+      "selectAtLeastOne": "الرجاء تحديد طاولة واحدة على الأقل"
+    }
+  },
+  "reservationModal": {
+    "title": "حجز جديد",
+    "tables": "طاولة",
+    "tablesPlural": "طاولات",
+    "fields": {
+      "clientName": "اسم الزبون *",
+      "phone": "رقم الهاتف",
+      "totalPrice": "السعر الإجمالي (د.م) *",
+      "advance": "عربون مدفوع (د.م)",
+      "paymentMethod": "طريقة الدفع",
+      "notes": "ملاحظات (اختياري)"
+    },
+    "placeholders": {
+      "clientName": "مثال: محمد العلمي",
+      "phone": "مثال: 06 12 34 56 78",
+      "notes": "حساسية، طلبات خاصة..."
+    },
+    "payment": {
+      "cash": "نقداً",
+      "tpe": "بطاقة"
+    },
+    "balance": "المتبقي للدفع",
+    "actions": {
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ...",
+      "confirm": "✓ تأكيد الحجز"
+    },
+    "errors": {
+      "nameRequired": "اسم الزبون مطلوب",
+      "priceRequired": "السعر الإجمالي مطلوب",
+      "create": "خطأ أثناء إنشاء الحجز"
+    },
+    "success": "تم إنشاء الحجز بنجاح!"
+  },
+  "adminUsers": {
+    "title": "إدارة الصرافين",
+    "loading": "جارٍ التحميل...",
+    "roles": {
+      "caissier": "أمين صندوق",
+      "admin": "مسؤول"
+    },
+    "status": {
+      "active": "نشط",
+      "revoked": "ملغى"
+    },
+    "fields": {
+      "username": "اسم المستخدم",
+      "password": "كلمة المرور",
+      "role": "الدور"
+    },
+    "actions": {
+      "newCashier": "أمين صندوق جديد",
+      "create": "إنشاء",
+      "cancel": "إلغاء",
+      "revoke": "إلغاء الوصول",
+      "restore": "استعادة"
+    },
+    "tableHeaders": {
+      "id": "#",
+      "user": "المستخدم",
+      "role": "الدور",
+      "status": "الحالة",
+      "createdAt": "تاريخ الإنشاء",
+      "actions": "إجراءات"
+    },
+    "messages": {
+      "loadError": "خطأ في تحميل المستخدمين",
+      "createSuccess": "تم إنشاء المستخدم بنجاح",
+      "accessRevoked": "تم إلغاء الوصول",
+      "accessRestored": "تمت استعادة الوصول",
+      "error": "خطأ"
+    }
+  },
+  "adminLogs": {
+    "title": "سجلات التدقيق",
+    "totalEntries": "إدخال واحد",
+    "totalEntries_plural": "{{count}} إدخالات",
+    "filterPlaceholder": "تصفية حسب الإجراء...",
+    "loading": "جارٍ التحميل...",
+    "noData": "لم يتم العثور على سجلات",
+    "actions": {
+      "LOGIN": "تسجيل الدخول",
+      "CREATE_RESERVATION": "حجز جديد",
+      "UPDATE_RESERVATION": "تعديل",
+      "CANCEL_RESERVATION": "إلغاء الحجز",
+      "CREATE_USER": "مستخدم جديد",
+      "UPDATE_USER": "تحديث الملف الشخصي"
+    },
+    "descriptions": {
+      "LOGIN": "تسجيل الدخول إلى جلسة آمنة",
+      "CREATE_RESERVATION": "إنشاء الحجز #{{id}} للزبون {{customer}}",
+      "unknownCustomer": "مجهول",
+      "UPDATE_RESERVATION": "تعديل الحجز #{{id}}{{changes}}",
+      "statusChange": "الحالة: {{old}} ← {{new}}",
+      "priceChange": "السعر: {{old}} ← {{new}} د.م.",
+      "CANCEL_RESERVATION": "إلغاء الحجز #{{id}}",
+      "CREATE_USER": "إنشاء حساب المستخدم \"{{username}}\" ({{role}})",
+      "UPDATE_USER": "تحديث الملف الشخصي للمستخدم \"{{username}}\""
+    },
+    "tableHeaders": {
+      "id": "#",
+      "user": "المستخدم",
+      "action": "الإجراء",
+      "details": "التفاصيل",
+      "datetime": "التاريخ والوقت"
+    },
+    "pagination": {
+      "prev": "← السابق",
+      "page": "صفحة {{page}}",
+      "next": "التالي →"
+    },
+    "messages": {
+      "loadError": "خطأ في تحميل السجلات"
+    }
+  },
+  "adminTables": {
+    "title": "محرر المخطط",
+    "subtitle": "{{count}} طاولات • اسحب لتغيير الموضع",
+    "saving": "جارٍ الحفظ...",
+    "refresh": "تحديث",
+    "newTable": "طاولة جديدة",
+    "selectedTable": "الطاولة المحددة",
+    "loadingMap": "جارٍ تحميل المخطط...",
+    "fields": {
+      "number": "الرقم",
+      "zone": "المنطقة / اللون",
+      "capacity": "السعة",
+      "size": "الحجم",
+      "position": "الموضع"
+    },
+    "placeholders": {
+      "number": "مثال: 52، VIP5، 08C..."
+    },
+    "actions": {
+      "cancelPlacement": "إلغاء التموضع",
+      "placeOnMap": "وضع على الخريطة",
+      "update": "تحديث"
+    },
+    "instructions": {
+      "placement": "حرك المؤشر على الخريطة وانقر لوضع الطاولة في المكان المطلوب.",
+      "select": "انقر على طاولة في الخريطة لتحديدها وتعديل خصائصها."
+    },
+    "messages": {
+      "loadError": "تعذر تحميل الطاولات",
+      "savePositionError": "خطأ أثناء حفظ الموضع",
+      "numberRequired": "يرجى إدخال رقم الطاولة",
+      "createSuccess": "تم إنشاء الطاولة \"{{table_number}}\"",
+      "createError": "خطأ أثناء الإنشاء",
+      "updateSuccess": "تم تحديث الطاولة",
+      "updateError": "خطأ أثناء التحديث",
+      "deleteConfirm": "هل تريد حذف الطاولة \"{{table_number}}\" ؟\nهذا الإجراء لا يمكن التراجع عنه.",
+      "deleteSuccess": "تم حذف الطاولة",
+      "deleteError": "لا يمكن الحذف (حجوزات نشطة؟)",
+      "enterNumber": "الرجاء إدخال رقم الطاولة"
+    }
+  }
+}

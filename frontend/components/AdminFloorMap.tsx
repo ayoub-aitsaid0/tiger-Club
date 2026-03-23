@@ -37,16 +37,16 @@ const SNAP = 5;
 const snap = (v: number) => Math.round(v / SNAP) * SNAP;
 
 const FREE_STOPS: Record<string, (number | string)[]> = {
-    Orange: [0, '#f5e8b8', 0.28, '#d4a94e', 0.65, '#a07828', 1, '#6e500e'],
-    Teal:   [0, '#b0d8c8', 0.30, '#3d9a80', 0.65, '#1a7060', 1, '#0a4838'],
-    Grey:   [0, '#c8c4b8', 0.30, '#8a8278', 0.65, '#5e5850', 1, '#38342e'],
-    Purple: [0, '#d0a0ff', 0.30, '#8040d8', 0.65, '#5820a8', 1, '#320878'],
-    White:  [0, '#f8eecc', 0.30, '#d4b86a', 0.65, '#a88838', 1, '#7a6018'],
+    Orange: [0, '#FFA880', 0.45, '#F37950', 1, '#C84820'], // Exact requested F37950
+    Teal:   [0, '#50DFC8', 0.45, '#1B9684', 1, '#0F6B5C'], // Exact requested 1B9684
+    Grey:   [0, '#B8B8C4', 0.45, '#7A7A8A', 1, '#484858'],
+    Purple: [0, '#B0588A', 0.45, '#7C3360', 1, '#4A1A35'], // Exact requested 7C3360
+    White:  [0, '#FFF0D0', 0.45, '#F6BC59', 1, '#C08820'], // Exact requested F6BC59 for stools
 };
 
 const GHOST_FILL: Record<string, string> = {
-    Orange: '#c8a84b', Teal: '#0d9488', Grey: '#607068',
-    Purple: '#7c3aed', White: '#d4b86a',
+    Orange: '#F37950', Teal: '#1B9684', Grey: '#7A7A8A',
+    Purple: '#7C3360', White: '#F6BC59',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -165,60 +165,60 @@ export default function AdminFloorMap({
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={25} />
 
                     {/* ── Stage horizontal ────────────────────────────────── */}
-                    <Rect x={154} y={254} width={832} height={91}
+                    <Rect x={150} y={260} width={780} height={100}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 91 }}
+                        fillLinearGradientEndPoint={{ x: 0, y: 100 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
                         stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
-                    <Text x={154} y={278} width={832} text="STAGE"
+                    <Text x={150} y={288} width={780} text="STAGE"
                         fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={14}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={20} />
 
                     {/* ── Stage vertical ──────────────────────────────────── */}
-                    <Rect x={468} y={345} width={166} height={425}
+                    <Rect x={460} y={380} width={160} height={340}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 166, y: 0 }}
+                        fillLinearGradientEndPoint={{ x: 160, y: 0 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
                         stroke="#F6BC59" strokeWidth={3} />
-                    <Text x={566} y={492} width={131} text="STAGE"
+                    <Text x={555} y={485} width={131} text="STAGE"
                         fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
                         rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
 
                     {/* ── Piste ───────────────────────────────────────────── */}
-                    <Rect x={342} y={888} width={418} height={281}
+                    <Rect x={340} y={860} width={400} height={220}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 281 }}
+                        fillLinearGradientEndPoint={{ x: 0, y: 220 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
                         stroke="#F6BC59" strokeWidth={3} />
-                    <Rect x={344} y={890} width={414} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Rect x={344} y={1167} width={414} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Text x={424} y={954} width={149} text="PISTE"
-                        fontSize={25} fontStyle="bold" fill="#F6BC59"
+                    <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                    <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                    <Text x={406} y={915} width={100} text="PISTE"
+                        fontSize={23} fontStyle="bold" fill="#F6BC59"
                         align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Text x={705} y={954} width={149} text="PISTE"
-                        fontSize={25} fontStyle="bold" fill="#F6BC59"
+                    <Text x={697} y={915} width={100} text="PISTE"
+                        fontSize={23} fontStyle="bold" fill="#F6BC59"
                         align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Circle x={551} y={1029} radius={72}
-                        fillLinearGradientStartPoint={{ x: -72, y: -72 }}
-                        fillLinearGradientEndPoint={{ x: 72, y: 72 }}
+                    <Circle x={540} y={970} radius={65}
+                        fillLinearGradientStartPoint={{ x: -65, y: -65 }}
+                        fillLinearGradientEndPoint={{ x: 65, y: 65 }}
                         fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
                         stroke="#F6BC59" strokeWidth={4}
                         shadowColor="rgba(246,188,89,0.5)" shadowBlur={32} />
-                    <Circle x={551} y={1029} radius={63}
+                    <Circle x={540} y={970} radius={56}
                         fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
-                    <Text x={484} y={1002} width={131} text="TIGER"
-                        fontSize={27} fontStyle="bold" fill="#F6BC59" align="center"
+                    <Text x={474} y={956} width={131} text="TIGER"
+                        fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={5}
                         shadowColor="rgba(246,188,89,1.0)" shadowBlur={22} />
 
                     {/* ── Red accent dividers ─────────────────────────────── */}
-                    <Rect x={171} y={734} width={45} height={4} fill="#dc2626" cornerRadius={2}
+                    <Rect x={152} y={845} width={45} height={4} fill="#dc2626" cornerRadius={2}
                         shadowColor="#dc2626" shadowBlur={7} />
-                    <Rect x={887} y={1553} width={45} height={7} fill="#dc2626" cornerRadius={2}
+                    <Rect x={883} y={1560} width={45} height={7} fill="#dc2626" cornerRadius={2}
                         shadowColor="#dc2626" shadowBlur={7} />
 
                     {/* ── Tables (draggable) ──────────────────────────────── */}

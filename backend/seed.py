@@ -20,141 +20,135 @@ def build_tables():
         })
         tid += 1
 
-    # Grid columns X  — scaled ×1.8 for 1080-wide canvas
-    C1 = 43    # was 24
-    C2 = 171   # was 95
-    C3 = 232   # was 129
-    C4 = 358   # was 199
-    C5 = 484   # was 269
-    C6 = 634   # was 352
-    C7 = 760   # was 422
-    C8 = 925   # was 514
-    C9 = 986   # was 548
+    W = 100
+    H = 100
+    W_st = 60
+    H_st = 20
+    GAP = 20
 
-    # Grid rows Y  — scaled ×(1920/1060) for 1920-tall canvas
-    Y_TOP = 136
-    Ys = [0, 362, 498, 634, 770, 906, 1042, 1178, 1314, 1450, 1586, 1722]
+    CX = {
+        "C1": 30,
+        "C2": 150,
+        "C3": 220,
+        "C4": 340,
+        "C5": 490,
+        "C6": 640,
+        "C7": 760,
+        "C8": 880,
+        "C9": 950
+    }
 
-    W_org = 110  # was 61
-    H_org = 109  # was 60
-    W_st  = 56   # was 31
-    H_st  = 63   # was 35
-    W_c9  = 88   # was 49
+    def y_row(r): return 140 + r * 120
+    def sy(start_y, i, gap=14): return start_y + i * (H_st + gap)
 
-    # ── TOP ROW ──────────────────────────────────────────────────────────────
-    add("36B",  "Orange", C1, Y_TOP, W_org, 91, 4)
-    add("36",   "Orange", C1, 254,   W_org, 91, 4)
-    add("37",   "Orange", C3, Y_TOP, W_org, 91, 4)
-    add("37.B", "Orange", C4, Y_TOP, W_org, 91, 4)
-    add("38",   "Orange", C5, Y_TOP, 131,   91, 6)
-    add("38.B", "Orange", C6, Y_TOP, W_org, 91, 4)
-    add("39",   "Orange", C7, Y_TOP, W_org, 91, 4)
-    add("40",   "Orange", C9, Y_TOP, W_c9,  91, 4)
-    add("40B",  "Orange", C9, 254,   W_c9,  91, 4)
+    # ── R0: Top Row ──────────────────────────────────────────────────────────
+    r0 = y_row(0)
+    add("36",   "Orange", CX["C1"], r0, W, H, 4)
+    add("37",   "Orange", CX["C3"], r0, W, H, 4)
+    add("37.B", "Orange", CX["C4"], r0, W, H, 4)
+    add("38",   "Orange", 460,      r0, 160, H, 6) # Center 540
+    add("38.B", "Orange", CX["C6"], r0, W, H, 4)
+    add("39",   "Orange", CX["C7"], r0, W, H, 4)
+    add("40",   "Orange", CX["C9"], r0, W, 40, 2)
+    add("40B",  "Orange", CX["C9"], r0+60, W, 40, 2)
 
-    # ── C1 (Far Left column) ─────────────────────────────────────────────────
-    add("35.C", "Orange", C1, Ys[1], W_org, H_org)
-    add("35.B", "Orange", C1, Ys[2], W_org, H_org)
-    add("35",   "Orange", C1, Ys[3], W_org, H_org)
-    add("34",   "Orange", C1, Ys[4], W_org, H_org)
-    add("33.B", "Orange", C1, Ys[5], W_org, H_org)
-    add("33",   "Orange", C1, Ys[6], W_org, H_org)
+    # ── Main Grid ────────────────────────────────────────────────────────────
+    # Helper to add standard tables across standard columns
+    def grid_row(r, c1, c3, c4, c5, c6, c7, c9):
+        y = y_row(r)
+        if c1: add(c1[0], c1[1], CX["C1"], y, W, H, 4)
+        if c3: add(c3[0], c3[1], CX["C3"], y, W, H, 4)
+        if c4: add(c4[0], c4[1], CX["C4"], y, W, H, 4)
+        if c5: add(c5[0], c5[1], CX["C5"], y, W, H, 4)
+        if c6: add(c6[0], c6[1], CX["C6"], y, W, H, 4)
+        if c7: add(c7[0], c7[1], CX["C7"], y, W, H, 4)
+        if c9: add(c9[0], c9[1], CX["C9"], y, W, H, 4)
 
-    # ── C3 (Inner Left) ──────────────────────────────────────────────────────
-    add("11",   "Orange", C3, Ys[1], W_org, H_org)
-    add("10",   "Orange", C3, Ys[2], W_org, H_org)
-    add("09",   "Orange", C3, Ys[3], W_org, H_org)
-    add("08",   "Teal",   C3, Ys[4], W_org, H_org)
-    add("07",   "Teal",   C3, Ys[5], W_org, H_org)
-    add("07.B", "Orange", C3, Ys[6], W_org, H_org)
-    add("07.C", "Orange", C3, Ys[7], W_org, H_org)
-    add("30",   "Orange", 203, 1414, 144, H_org)
+    # R2 (Y=380)
+    grid_row(2, 
+        ("35.C", "Orange"), ("11", "Orange"), ("14", "Grey"), None, ("17", "Grey"), ("01", "Orange"), ("41", "Orange")
+    )
+    
+    # R3 (Y=500)
+    grid_row(3, 
+        ("35.B", "Orange"), ("10", "Orange"), ("15", "Grey"), None, ("18", "Grey"), ("02", "Orange"), ("42", "Orange")
+    )
+    
+    # R4 (Y=620)
+    grid_row(4, 
+        ("35", "Orange"),   ("09", "Orange"), ("16", "Grey"), None, ("19", "Grey"), ("03", "Orange"), ("43", "Orange")
+    )
+    
+    # R5 (Teal Row 1 - Y=740)
+    # User instruction: "for 04 to 20b they all should be moved down to add 04b above 04 and under 03"
+    # "give space to 08b 12 and 12b so they dont appear overlapped"
+    grid_row(5, 
+        ("34", "Orange"),   ("08", "Teal"),   ("08B", "Teal"), ("12", "Teal"), ("12.B", "Teal"), ("04B", "Teal"), ("44", "Orange")
+    )
 
-    # ── C4 (Grey/Teal – Left of Stage) ───────────────────────────────────────
-    add("14", "Grey", C4, Ys[1], W_org, H_org)
-    add("15", "Grey", C4, Ys[2], W_org, H_org)
-    add("16", "Grey", C4, Ys[3], W_org, H_org)
-    add("12", "Teal", C4, Ys[4], W_org, H_org)
-    add("06", "Teal", C4, Ys[7], W_org, H_org)
+    # R6 (Teal Row 2 - Y=860) Piste Top
+    grid_row(6, 
+        ("33.B", "Orange"), ("07", "Teal"),   None, None, None, ("04", "Teal"), ("45", "Orange")
+    )
 
-    # ── C6 (Grey/Teal – Right of Stage) ──────────────────────────────────────
-    add("17",   "Grey", C6, Ys[1], W_org, H_org)
-    add("18",   "Grey", C6, Ys[2], W_org, H_org)
-    add("19",   "Grey", C6, Ys[3], W_org, H_org)
-    add("12.B", "Teal", C6, Ys[4], W_org, H_org)
-    add("05.B", "Teal", C6, Ys[7], W_org, H_org)
+    # R7 (Y=980) Piste Mid
+    grid_row(7, 
+        ("33", "Orange"),   ("07.B", "Orange"), None, None, None, ("05", "Teal"), ("46", "Orange")
+    )
 
-    # Below-piste centre tables
-    add("06C", "Teal", 409, 1301, 121, 94, 4)
-    add("06K", "Teal", 545, 1301, 121, 94, 4)
+    # R8 (Y=1100) Piste Bot
+    grid_row(8, 
+        None, ("07.C", "Orange"), ("06", "Teal"), None, ("06.B", "Teal"), ("20", "Teal"), ("47", "Orange")
+    )
+    
+    # R9 (Y=1220) Below Piste
+    grid_row(9, 
+        None, ("30", "Orange"),   ("06C", "Teal"), None, ("06K", "Teal"), ("20B", "Teal"), ("48", "Orange")
+    )
 
-    # ── C7 (Inner Right) ─────────────────────────────────────────────────────
-    add("01",  "Orange", C7,  Ys[1], W_org, H_org)
-    add("02",  "Orange", C7,  Ys[2], W_org, H_org)
-    add("03",  "Orange", C7,  Ys[3], W_org, H_org)
-    add("04",  "Teal",   C7,  Ys[4], W_org, H_org)
-    add("04B", "Teal",   870, Ys[4], 55,    H_org, 4)
-    add("05",  "Teal",   C7,  Ys[5], W_org, H_org)
-    add("20",  "Teal",   C7,  Ys[6], W_org, H_org)
-    add("20B", "Teal",   870, Ys[6], 55,    H_org, 4)
+    # ── Bottom Center Block ──────────────────────────────────────────────────
+    # R10 (Y=1340)
+    y10 = y_row(10)
+    add("23",   "Orange", CX["C4"], y10, W, H, 4)
+    add("22",   "Orange", CX["C5"], y10, W, H, 4)
+    add("21",   "Orange", CX["C6"], y10, W, H, 4)
+    add("49",   "Orange", CX["C9"], y10, W, H, 4)
 
-    # ── C9 (Far Right column: 41-50) ─────────────────────────────────────────
-    for i in range(1, 11):
-        add(str(40 + i), "Orange", C9, Ys[i], W_c9, H_org)
+    # R11 (Y=1460)
+    y11 = y_row(11)
+    add("25",   "Orange", 430,      y11, W, H, 4)
+    add("24",   "Orange", 550,      y11, W, H, 4)
+    add("49B",  "Orange", CX["C9"], y11, W, H, 4)
 
-    # "49B" – companion to 49
-    add("49B", "Orange", 873, Ys[9], 50, 100, 4)
+    # R12 (Y=1580)
+    y12 = y_row(12)
+    add("27",   "Orange", 430,      y12, W, H, 4)
+    add("26",   "Orange", 550,      y12, W, H, 4)
+    # Corner 51B, 51, 50 offset to avoid stool column overlap
+    add("51B",  "Orange", 710,      y12, W, H, 4)
+    add("51",   "Orange", 830,      y12, W, H, 4)
+    add("50",   "Orange", CX["C9"], y12, W, H, 4)
 
-    # ── Bottom Centre Block ───────────────────────────────────────────────────
-    add("23", "Orange", 358, 1414, W_org, H_org)
-    add("22", "Orange", 497, 1414, W_org, H_org)
-    add("21", "Orange", 634, 1414, W_org, H_org)
-    add("25", "Orange", 401, 1554, 131,   H_org)
-    add("24", "Orange", 567, 1554, 131,   H_org)
-    add("27", "Orange", 401, 1685, 131,   145)
-    add("26", "Orange", 567, 1685, 131,   145)
+    # ── VIP Block (Bottom Left) ──────────────────────────────────────────────
+    # Exactly 3 VIP zones requested. Spanning col 1 and 2 area.
+    w_vip = 150
+    h_vip = 100
+    add("VIP1", "Purple", CX["C1"], y_row(10), w_vip, h_vip, 8)
+    add("VIP2", "Purple", CX["C1"], y_row(11), w_vip, h_vip, 8)
+    add("VIP3", "Purple", CX["C1"], y_row(12), w_vip, h_vip, 8)
 
-    # ── Bottom Right extras ───────────────────────────────────────────────────
-    add("51B", "Orange", 727, 1685, 94, H_org)
-    add("51",  "Orange", 837, 1685, 94, H_org)
+    # ── Stools C2 (Left) ─────────────────────────────────────────────────────
+    # "the height of tables like 150 to 101 should be minimized" -> H_st=20
+    # Group 1: 150-141. R2 Y=380.
+    for i in range(10): add(str(150 - i), "White", CX["C2"], sy(y_row(2), i), W_st, H_st, 2)
+    # Group 2: 140-131. R6 Y=860.
+    for i in range(10): add(str(140 - i), "White", CX["C2"], sy(y_row(6), i), W_st, H_st, 2)
 
-    # ── VIP 2×2 grid (Bottom Left) ───────────────────────────────────────────
-    add("VIP1", "Purple", 16,  1503, 88, 109, 8)
-    add("VIP2", "Purple", 121, 1503, 88, 109, 8)
-    add("VIP3", "Purple", 16,  1649, 88, 109, 8)
-    add("VIP4", "Purple", 121, 1649, 88, 109, 8)
-
-
-    # ── Stools Left (C2) ─────────────────────────────────────────────────────
-    # Group 1 (150-141): y=362, step=72
-    y_st = Ys[1]
-    for i in range(150, 140, -1):
-        add(str(i), "White", C2, y_st, W_st, H_st, 2)
-        y_st += 72
-
-    # Group 2 (140-136): start at y=1127
-    y_st = 1127
-    for i in range(140, 135, -1):
-        add(str(i), "White", C2, y_st, W_st, H_st, 2)
-        y_st += 72
-
-    # ── Stools Right (C8) ────────────────────────────────────────────────────
-    # Group 1 (101-111)
-    y_st = Ys[1]
-    for i in range(101, 112):
-        add(str(i), "White", C8, y_st, W_st, H_st, 2)
-        y_st += 72
-
-    # Group 2 (121-130): y=1178
-    y_st = Ys[7]
-    for i in range(121, 131):
-        add(str(i), "White", C8, y_st, W_st, H_st, 2)
-        y_st += 72
-
-    # ── 08B rendered LAST so it appears on top of stool 145 (y=722-785) ──────
-    # Sits between tables 09 (ends y=743) and 08 (starts y=770), in stool column
-    add("08B", "Orange", C2, 743, W_st, 27, 2)
-
+    # ── Stools C8 (Right) ────────────────────────────────────────────────────
+    for i in range(10): add(str(101 + i), "White", CX["C8"], sy(y_row(2), i), W_st, H_st, 2)
+    for i in range(10): add(str(111 + i), "White", CX["C8"], sy(y_row(6), i), W_st, H_st, 2)
+    for i in range(10): add(str(121 + i), "White", CX["C8"], sy(y_row(9), i), W_st, H_st, 2)
+    
     return tables
 
 

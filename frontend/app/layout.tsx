@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import I18nProvider from "@/components/I18nProvider";
 
 export const metadata: Metadata = {
   title: "Tiger Club – Gestion des Réservations",
@@ -9,9 +10,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" dir="ltr">
       <body>
-        {children}
+        <I18nProvider>
+          {children}
         <Toaster
           position="top-right"
           toastOptions={{
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
           }}
         />
+        </I18nProvider>
       </body>
     </html>
   );

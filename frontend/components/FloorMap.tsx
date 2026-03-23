@@ -9,25 +9,28 @@ interface FloorMapProps {
     onTableClick: (table: TableStatus) => void;
 }
 
-const CANVAS_W = 1080; // portrait-proportioned canvas (was 600); ratio 1080:1920 = 0.5625 matches reference
+const CANVAS_W = 1080;
 const CANVAS_H = 1920;
 const MIN_SCALE = 0.15;
 const MAX_SCALE = 3.0;
 
-// ─── Gradient stops ────────────────────────────────────────────────────────
-// Palette: #F6BC59 (golden) as dominant colour; #F37950 only as deep shadow.
-// Style: polished brass/gold plate — light cream highlight → rich amber → dark base.
-// Matches the reference image (bgtiger.png): cream background + warm gold tables.
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLOUR SYSTEM
+   Cleaner 3-stop gradients per zone. Dark-on-light for Orange/White,
+   light-on-dark for Teal/Purple/Grey. Reserved & occupied are distinct.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 const FREE_STOPS: Record<string, (number | string)[]> = {
-    Orange: [0, '#FFF2C8', 0.14, '#F6BC59', 0.48, '#D4920C', 0.82, '#A86510', 1, '#7A4808'],
-    Teal:   [0, '#A8E8D0', 0.14, '#28B880', 0.48, '#0E8858', 0.82, '#085838', 1, '#043820'],
-    Grey:   [0, '#D4D0C0', 0.14, '#9C9488', 0.48, '#6C6460', 0.82, '#484038', 1, '#282420'],
-    Purple: [0, '#E0B0FF', 0.14, '#9040E8', 0.48, '#6018B0', 0.82, '#401888', 1, '#200560'],
-    White:  [0, '#FFF8DC', 0.14, '#F0B840', 0.48, '#C88020', 0.82, '#9A6018', 1, '#6A4010'],
+    Orange: [0, '#FFA880', 0.45, '#F37950', 1, '#C84820'], // Exact requested F37950
+    Teal:   [0, '#50DFC8', 0.45, '#1B9684', 1, '#0F6B5C'], // Exact requested 1B9684
+    Grey:   [0, '#B8B8C4', 0.45, '#7A7A8A', 1, '#484858'],
+    Purple: [0, '#B0588A', 0.45, '#7C3360', 1, '#4A1A35'], // Exact requested 7C3360
+    White:  [0, '#FFF0D0', 0.45, '#F6BC59', 1, '#C08820'], // Exact requested F6BC59 for stools
 };
-const RESERVED_STOPS: (number | string)[] = [0, '#FFA8A8', 0.14, '#E02828', 0.48, '#A80808', 0.82, '#780000', 1, '#500000'];
-const OCCUPIED_STOPS:  (number | string)[] = [0, '#FFE898', 0.14, '#E09808', 0.48, '#A87005', 0.82, '#785003', 1, '#503000'];
-const LINKED_STOPS:    (number | string)[] = [0, '#FFF2C8', 0.14, '#F6BC59', 0.48, '#D4920C', 0.82, '#A86510', 1, '#7A4808'];
+
+const RESERVED_STOPS: (number | string)[] = [0, '#FF7878', 0.45, '#E83838', 1, '#A01818'];
+const OCCUPIED_STOPS: (number | string)[] = [0, '#FFD060', 0.45, '#D89718', 1, '#986808'];
+const LINKED_STOPS:   (number | string)[] = [0, '#FFE4A0', 0.45, '#F6BC59', 1, '#C08820'];
 
 function getStops(status: string, zone: string, linked: boolean): (number | string)[] {
     if (linked) return LINKED_STOPS;
@@ -36,16 +39,37 @@ function getStops(status: string, zone: string, linked: boolean): (number | stri
     return FREE_STOPS[zone] ?? FREE_STOPS.Orange;
 }
 
+/* Stroke colour — zone-aware for free, semantic for states */
 function getStroke(status: string, zone: string, linked: boolean, hovered: boolean): string {
-    if (linked)  return '#F6BC59';
-    if (hovered) return 'rgba(255,255,255,0.85)';
-    if (status === 'reserved') return '#ff6060';
-    if (status === 'occupied') return '#F6BC59';
+    if (linked)  return '#FFD685';
+    if (hovered) return '#FFFFFF';
+    if (status === 'reserved') return '#FF5050';
+    if (status === 'occupied') return '#FFB838';
     const map: Record<string, string> = {
-        Orange: '#F6BC59', Teal: '#50D0A8',
-        Grey: '#b0a898', Purple: '#c080ff', White: '#F6BC59',
+        Orange: '#F6BC59', Teal: '#50DFC8',
+        Grey: '#9898A8', Purple: '#B0588A', White: '#F6BC59',
     };
     return map[zone] ?? '#F6BC59';
+}
+
+/* Text colour — ensure contrast on each background */
+function getTextFill(status: string, zone: string): string {
+    if (status === 'reserved') return '#FFFFFF';
+    if (status === 'occupied') return '#1A0800';
+    if (zone === 'Purple' || zone === 'Teal') return '#FFFFFF';
+    return '#1A0A00';
+}
+
+/* Status emoji for hover tooltip */
+function getStatusLabel(status: string): string {
+    if (status === 'reserved') return '● Réservée';
+    if (status === 'occupied') return '● Occupée';
+    return '● Libre';
+}
+function getStatusColor(status: string): string {
+    if (status === 'reserved') return '#FF5050';
+    if (status === 'occupied') return '#FFB838';
+    return '#50D880';
 }
 
 export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
@@ -60,11 +84,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
     const [stagePos, setStagePos]     = useState({ x: 0, y: 0 });
     const [hoveredId, setHoveredId]   = useState<number | null>(null);
 
-    // ── Fit the whole map into the container ─────────────────────────────
-    // Reserve space for the floating top bar, then contain the full canvas
-    // (Math.min) so every table is visible. Side bars on landscape screens are
-    // unavoidable for a portrait canvas but no content is ever clipped.
-    const BAR_H = 58; // height of the floating top control bar
+    const BAR_H = 58;
 
     const fitMap = useCallback((vw: number, vh: number) => {
         const availH = vh - BAR_H;
@@ -79,9 +99,8 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         });
     }, []);
 
-    const fitAll = fitMap; // ⊙ reset does the same thing
+    const fitAll = fitMap;
 
-    // ── ResizeObserver ───────────────────────────────────────────────────
     useEffect(() => {
         const update = () => {
             if (!containerRef.current) return;
@@ -98,7 +117,6 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         return () => { ro.disconnect(); window.removeEventListener('resize', update); };
     }, [fitMap]);
 
-    // ── Clamp position so the canvas never goes fully off-screen ────────
     const clampPos = (x: number, y: number, scale: number, vw: number, vh: number) => {
         const margin = 60;
         const cw = CANVAS_W * scale;
@@ -109,7 +127,6 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         };
     };
 
-    // ── Zoom helper (zoom toward a point) ────────────────────────────────
     const zoomTo = (newScale: number, pivotX: number, pivotY: number) => {
         newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
         setStageScale((prev: number) => {
@@ -123,7 +140,6 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         });
     };
 
-    // ── Mouse wheel zoom ─────────────────────────────────────────────────
     const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
         e.evt.preventDefault();
         const stage = e.target.getStage()!;
@@ -132,31 +148,22 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         zoomTo(stageScale * factor, ptr.x, ptr.y);
     };
 
-    // ── Touch pinch-to-zoom ──────────────────────────────────────────────
     const handleTouchMove = (e: KonvaEventObject<TouchEvent>) => {
         const touches = e.evt.touches;
         if (touches.length !== 2) { lastDist.current = 0; lastCenter.current = null; return; }
         e.evt.preventDefault();
-
-        const t0 = touches[0];
-        const t1 = touches[1];
-        const dx = t0.clientX - t1.clientX;
-        const dy = t0.clientY - t1.clientY;
+        const t0 = touches[0], t1 = touches[1];
+        const dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const cx = (t0.clientX + t1.clientX) / 2;
         const cy = (t0.clientY + t1.clientY) / 2;
-
-        if (lastDist.current > 0) {
-            const factor = dist / lastDist.current;
-            zoomTo(stageScale * factor, cx, cy);
-        }
+        if (lastDist.current > 0) zoomTo(stageScale * (dist / lastDist.current), cx, cy);
         lastDist.current = dist;
         lastCenter.current = { x: cx, y: cy };
     };
 
     const handleTouchEnd = () => { lastDist.current = 0; lastCenter.current = null; };
 
-    // ── Stage drag (pan) ─────────────────────────────────────────────────
     const handleDragStart = () => { isDragging.current = true; };
     const handleDragEnd   = (e: KonvaEventObject<DragEvent>) => {
         isDragging.current = false;
@@ -165,9 +172,8 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         setStagePos(clamped);
     };
 
-    // ── Table click ──────────────────────────────────────────────────────
     const handleClick = (table: TableStatus) => {
-        if (isDragging.current) return; // ignore click after drag
+        if (isDragging.current) return;
         if (linkMode) {
             linkedTables.includes(table.id) ? removeLinkedTable(table.id) : addLinkedTable(table.id);
             return;
@@ -175,17 +181,15 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         onTableClick(table);
     };
 
-    // ── Zoom buttons — pivot on canvas center (clamped to viewport) ──────
     const canvasCx = () => Math.min(Math.max(stagePos.x + (CANVAS_W * stageScale) / 2, 0), viewport.w);
     const canvasCy = () => Math.min(Math.max(stagePos.y + (CANVAS_H * stageScale) / 2, 0), viewport.h);
     const zoomIn   = () => zoomTo(stageScale * 1.25, canvasCx(), canvasCy());
     const zoomOut  = () => zoomTo(stageScale / 1.25, canvasCx(), canvasCy());
-    const resetZoom = () => fitAll(viewport.w, viewport.h); // ⊙ shows all tables
+    const resetZoom = () => fitAll(viewport.w, viewport.h);
 
     return (
-        <div ref={containerRef} style={{ width: '100%', height: '100%', background: '#0A0806', position: 'relative', overflow: 'hidden' }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', background: '#060608', position: 'relative', overflow: 'hidden' }}>
 
-            {/* Konva Stage — fills full container, canvas pans/zooms inside */}
             <Stage
                 width={viewport.w}
                 height={viewport.h}
@@ -203,184 +207,149 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
             >
                 <Layer>
 
-                    {/* ══ BACKGROUND — Dark luxury marble ══════════════════════ */}
+                    {/* ══ BACKGROUND ═══════════════════════════════════════════
+                        Clean atmospheric dark base with warm centre glow
+                        and edge vignette. No marble veins.
+                    ═══════════════════════════════════════════════════════════ */}
 
-                    {/* 1 · Base: deep warm charcoal gradient (top-centre → bottom) */}
+                    {/* 1 · Deep charcoal base */}
                     <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
                         fillLinearGradientStartPoint={{ x: CANVAS_W * 0.5, y: 0 }}
                         fillLinearGradientEndPoint={{ x: CANVAS_W * 0.5, y: CANVAS_H }}
                         fillLinearGradientColorStops={[
-                            0,    '#201A12',
-                            0.25, '#161008',
-                            0.55, '#0E0C06',
-                            0.80, '#131008',
-                            1,    '#1C1610',
+                            0,    '#141218',
+                            0.35, '#0C0A10',
+                            0.65, '#0A080E',
+                            1,    '#100E16',
                         ]}
                     />
 
-                    {/* 2 · Diagonal warmth band (left-warm → centre-neutral → right-warm) */}
-                    <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                        fillLinearGradientStartPoint={{ x: 0, y: CANVAS_H * 0.35 }}
-                        fillLinearGradientEndPoint={{ x: CANVAS_W, y: CANVAS_H * 0.65 }}
-                        fillLinearGradientColorStops={[
-                            0,   'rgba(200,150,55,0.10)',
-                            0.4, 'rgba(0,0,0,0)',
-                            0.6, 'rgba(0,0,0,0)',
-                            1,   'rgba(180,130,45,0.09)',
-                        ]}
-                    />
-
-                    {/* 3 · Tiger-circle golden glow — heart of the club */}
+                    {/* 2 · Warm centre glow (PISTE area) */}
                     <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
                         fillRadialGradientStartPoint={{ x: 551, y: 1029 }}
                         fillRadialGradientEndPoint={{ x: 551, y: 1029 }}
                         fillRadialGradientStartRadius={0}
-                        fillRadialGradientEndRadius={720}
+                        fillRadialGradientEndRadius={650}
                         fillRadialGradientColorStops={[
-                            0,    'rgba(246,188,89,0.34)',
-                            0.28, 'rgba(220,155,55,0.15)',
-                            0.60, 'rgba(180,115,35,0.05)',
+                            0,    'rgba(246,188,89,0.12)',
+                            0.35, 'rgba(220,155,55,0.06)',
+                            0.70, 'rgba(180,115,35,0.02)',
                             1,    'rgba(0,0,0,0)',
                         ]}
                     />
 
-                    {/* 4 · DJ / Stage spotlight from top */}
+                    {/* 3 · DJ spotlight from top */}
                     <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
                         fillRadialGradientStartPoint={{ x: CANVAS_W / 2, y: 56 }}
                         fillRadialGradientEndPoint={{ x: CANVAS_W / 2, y: 56 }}
                         fillRadialGradientStartRadius={0}
-                        fillRadialGradientEndRadius={600}
+                        fillRadialGradientEndRadius={500}
                         fillRadialGradientColorStops={[
-                            0,    'rgba(246,188,89,0.20)',
-                            0.40, 'rgba(200,140,50,0.08)',
+                            0,    'rgba(246,188,89,0.10)',
+                            0.50, 'rgba(200,140,50,0.04)',
                             1,    'rgba(0,0,0,0)',
                         ]}
                     />
 
-                    {/* 5 · Vignette — darken all four edges, focus on centre */}
+                    {/* 4 · Vignette — darken edges */}
                     <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                        fillRadialGradientStartPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.40 }}
-                        fillRadialGradientEndPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.40 }}
-                        fillRadialGradientStartRadius={300}
-                        fillRadialGradientEndRadius={1100}
+                        fillRadialGradientStartPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.42 }}
+                        fillRadialGradientEndPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.42 }}
+                        fillRadialGradientStartRadius={350}
+                        fillRadialGradientEndRadius={1050}
                         fillRadialGradientColorStops={[
                             0,    'rgba(0,0,0,0)',
-                            0.42, 'rgba(0,0,0,0.18)',
-                            1,    'rgba(0,0,0,0.76)',
+                            0.50, 'rgba(0,0,0,0.20)',
+                            1,    'rgba(0,0,0,0.65)',
                         ]}
                     />
 
-                    {/* 6 · Marble veins — horizontal hairlines */}
-                    {([
-                        [0,   252,  CANVAS_W, 1.5, 0.07],
-                        [0,   430,  640,      1,   0.06],
-                        [560, 448,  520,      1,   0.04],
-                        [0,   718,  CANVAS_W, 2,   0.05],
-                        [120, 872,  450,      1,   0.06],
-                        [0,   1088, 320,      1.5, 0.07],
-                        [710, 1148, 370,      1,   0.05],
-                        [0,   1298, CANVAS_W, 1,   0.04],
-                        [250, 1462, 580,      2,   0.06],
-                        [0,   1638, 470,      1,   0.05],
-                        [610, 1714, 470,      1.5, 0.07],
-                        [0,   1858, 720,      1,   0.04],
-                    ] as [number,number,number,number,number][]).map(([x,y,w,h,a], i) => (
-                        <Rect key={`hv${i}`} x={x} y={y} width={w} height={h}
-                              fill={`rgba(255,238,192,${a})`} />
-                    ))}
-
-                    {/* 7 · Marble veins — vertical hairlines */}
-                    {([
-                        [272, 0,    720, 0.05],
-                        [812, 380,  870, 0.04],
-                        [178, 1225, 695, 0.06],
-                        [930, 130,  470, 0.04],
-                    ] as [number,number,number,number][]).map(([x,y,h,a], i) => (
-                        <Rect key={`vv${i}`} x={x} y={y} width={1.5} height={h}
-                              fill={`rgba(255,238,192,${a})`} />
-                    ))}
-
-                    {/* ── Border: thick dark outer frame + inner gold line ─────── */}
+                    {/* ── Border frame ─────────────────────────────────────── */}
                     <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                        fill="transparent" stroke="#1A1208" strokeWidth={14} cornerRadius={6} />
-                    <Rect x={16} y={16} width={CANVAS_W - 32} height={CANVAS_H - 32}
-                        fill="transparent" stroke="#F6BC59" strokeWidth={2.5} cornerRadius={3} />
-                    <Rect x={21} y={21} width={CANVAS_W - 42} height={CANVAS_H - 42}
-                        fill="transparent" stroke="rgba(246,188,89,0.28)" strokeWidth={1} cornerRadius={2} />
+                        fill="transparent" stroke="#18141E" strokeWidth={12} cornerRadius={4} />
+                    <Rect x={14} y={14} width={CANVAS_W - 28} height={CANVAS_H - 28}
+                        fill="transparent" stroke="rgba(246,188,89,0.25)" strokeWidth={1.5} cornerRadius={3} />
 
                     {/* ── DJ Booth ─────────────────────────────────────────── */}
                     <Rect x={0} y={0} width={CANVAS_W} height={112}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                         fillLinearGradientEndPoint={{ x: 0, y: 112 }}
-                        fillLinearGradientColorStops={[0, '#2A2418', 0.5, '#181410', 1, '#0E0C08']} />
+                        fillLinearGradientColorStops={[0, '#1E1820', 0.5, '#12101A', 1, '#0A080E']} />
                     <Rect x={0} y={108} width={CANVAS_W} height={4}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                         fillLinearGradientEndPoint={{ x: CANVAS_W, y: 0 }}
-                        fillLinearGradientColorStops={[0, 'transparent', 0.15, '#F6BC59', 0.85, '#F6BC59', 1, 'transparent']} />
-                    <Text x={0} y={18} width={CANVAS_W} text="DJ"
-                        fontSize={60} fontStyle="bold" fill="#F6BC59" align="center"
-                        fontFamily="Georgia, serif" letterSpacing={25}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={25} />
+                        fillLinearGradientColorStops={[0, 'transparent', 0.12, '#F6BC59', 0.5, '#FFD685', 0.88, '#F6BC59', 1, 'transparent']} />
+                    <Text x={0} y={20} width={CANVAS_W} text="DJ"
+                        fontSize={58} fontStyle="bold" fill="#F6BC59" align="center"
+                        fontFamily="'Montserrat', sans-serif" letterSpacing={30}
+                        shadowColor="rgba(246,188,89,0.7)" shadowBlur={30} />
 
-                    {/* ── Stage horizontal ─────────────────────────────────── */}
-                    {/* Spans from right of table 36 (C1+W=153) to left of table 40B (C9=986) */}
-                    <Rect x={154} y={254} width={832} height={91}
+                    {/* ── Stage horizontal ────────────────────────────────── */}
+                    <Rect x={150} y={260} width={780} height={100}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 91 }}
+                        fillLinearGradientEndPoint={{ x: 0, y: 100 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
                         stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
-                    <Text x={154} y={278} width={832} text="STAGE"
+                    <Text x={150} y={288} width={780} text="STAGE"
                         fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={14}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={20} />
 
-                    {/* ── Stage vertical ───────────────────────────────────── */}
-                    {/* x=468 (C4+W) to x=634 (C6); ends at y=770 leaving gap for tables 12 & 12.B */}
-                    <Rect x={468} y={345} width={166} height={425}
+                    {/* ── Stage vertical ──────────────────────────────────── */}
+                    <Rect x={460} y={380} width={160} height={340}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 166, y: 0 }}
+                        fillLinearGradientEndPoint={{ x: 160, y: 0 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
                         stroke="#F6BC59" strokeWidth={3} />
-                    <Text x={566} y={492} width={131} text="STAGE"
+                    <Text x={555} y={485} width={131} text="STAGE"
                         fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
                         rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
 
-                    {/* ── Piste ────────────────────────────────────────────── */}
-                    {/* Spans from C3 right edge (342) to C7 left edge (760), width=418 */}
-                    <Rect x={342} y={888} width={418} height={281}
+                    {/* ── Piste ───────────────────────────────────────────── */}
+                    <Rect x={340} y={860} width={400} height={220}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 281 }}
+                        fillLinearGradientEndPoint={{ x: 0, y: 220 }}
                         fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
                         stroke="#F6BC59" strokeWidth={3} />
-                    <Rect x={344} y={890} width={414} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Rect x={344} y={1167} width={414} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Text x={424} y={954} width={149} text="PISTE"
-                        fontSize={25} fontStyle="bold" fill="#F6BC59"
+                    <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                    <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                    <Text x={406} y={915} width={100} text="PISTE"
+                        fontSize={23} fontStyle="bold" fill="#F6BC59"
                         align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Text x={705} y={954} width={149} text="PISTE"
-                        fontSize={25} fontStyle="bold" fill="#F6BC59"
+                    <Text x={697} y={915} width={100} text="PISTE"
+                        fontSize={23} fontStyle="bold" fill="#F6BC59"
                         align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Circle x={551} y={1029} radius={72}
-                        fillLinearGradientStartPoint={{ x: -72, y: -72 }}
-                        fillLinearGradientEndPoint={{ x: 72, y: 72 }}
+                    <Circle x={540} y={970} radius={65}
+                        fillLinearGradientStartPoint={{ x: -65, y: -65 }}
+                        fillLinearGradientEndPoint={{ x: 65, y: 65 }}
                         fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
                         stroke="#F6BC59" strokeWidth={4}
                         shadowColor="rgba(246,188,89,0.5)" shadowBlur={32} />
-                    <Circle x={551} y={1029} radius={63}
+                    <Circle x={540} y={970} radius={56}
                         fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
-                    <Text x={484} y={1002} width={131} text="TIGER"
-                        fontSize={27} fontStyle="bold" fill="#F6BC59" align="center"
-                        fontFamily="Georgia, serif" letterSpacing={5}
-                        shadowColor="rgba(246,188,89,1.0)" shadowBlur={22} />
+                    <Text x={474} y={956} width={131} text="TIGER"
+                        fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
+                        fontFamily="'Montserrat', sans-serif" letterSpacing={6}
+                        shadowColor="rgba(246,188,89,0.8)" shadowBlur={18} />
 
                     {/* ── Red accent dividers ───────────────────────────────── */}
-                    <Rect x={171} y={756} width={45} height={3} fill="#dc2626" cornerRadius={2}
-                        shadowColor="#dc2626" shadowBlur={7} />
-                    <Rect x={887} y={1553} width={45} height={7} fill="#dc2626" cornerRadius={2}
-                        shadowColor="#dc2626" shadowBlur={7} />
+                    <Rect x={171} y={740} width={45} height={3} fill="#dc2626" cornerRadius={2}
+                        shadowColor="#dc2626" shadowBlur={6} />
+                    <Rect x={887} y={1570} width={45} height={7} fill="#dc2626" cornerRadius={2}
+                        shadowColor="#dc2626" shadowBlur={6} />
+
+                    {/* ── Zone ground-plane cues ────────────────────────────── */}
+                    {/* VIP zone highlight */}
+                    <Rect x={20} y={1570} width={200} height={250}
+                        fill="rgba(155,64,232,0.04)" stroke="rgba(155,64,232,0.08)"
+                        strokeWidth={1} cornerRadius={12} />
+                    {/* Teal zone — around piste area */}
+                    <Rect x={210} y={600} width={730} height={860}
+                        fill="rgba(29,184,128,0.025)" stroke="rgba(29,184,128,0.06)"
+                        strokeWidth={1} cornerRadius={12} />
 
                     {/* ── Tables ───────────────────────────────────────────── */}
                     {tables.map((table) => {
@@ -390,13 +359,16 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                         const isSmall   = w <= 80;
                         const stops       = getStops(table.status, table.zone_type, isLinked);
                         const strokeColor = getStroke(table.status, table.zone_type, isLinked, isHovered);
-                        const strokeW     = isLinked || isHovered ? 2 : 1.2;
-                        const radius      = isSmall ? 9 : 18;
-                        const fontSize    = isSmall ? 15 : (w >= 180 ? 28 : 22);
-                        // Dark text on gold/cream tables (like reference), light on dark zones
-                        const darkBg = table.zone_type === 'Purple' || table.zone_type === 'Teal'
-                                    || table.status === 'reserved' || table.status === 'occupied';
-                        const textFill    = darkBg ? '#FFFFFF' : '#1A0A00';
+                        const strokeW     = isLinked ? 2.5 : isHovered ? 2 : 1;
+                        const radius      = isSmall ? 6 : 14;
+                        const fontSize    = isSmall ? 16 : (w >= 180 ? 26 : 21);
+                        const textFill    = isLinked ? '#1A0A00' : getTextFill(table.status, table.zone_type);
+
+                        // Glow colour based on state
+                        const glowColor = isLinked ? 'rgba(246,188,89,0.6)'
+                            : table.status === 'reserved' ? 'rgba(232,56,56,0.3)'
+                            : table.status === 'occupied' ? 'rgba(216,151,24,0.25)'
+                            : 'transparent';
 
                         return (
                             <Group
@@ -407,17 +379,27 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                                 onClick={() => handleClick(table)}
                                 onTap={() => handleClick(table)}
                             >
-                                {/* Glow ring on hover / link-select */}
-                                {(isHovered || isLinked) && (
-                                    <Rect x={-8} y={-8} width={w + 16} height={h + 16}
+                                {/* Ambient glow for reserved/occupied */}
+                                {(table.status !== 'free' || isLinked) && (
+                                    <Rect x={-4} y={-4} width={w + 8} height={h + 8}
                                         fill="transparent"
-                                        stroke={isLinked ? '#F6BC59' : 'rgba(255,255,255,0.6)'}
-                                        strokeWidth={isLinked ? 2.5 : 2}
-                                        cornerRadius={radius + 4} opacity={0.95} />
+                                        cornerRadius={radius + 4}
+                                        shadowColor={glowColor} shadowBlur={16} />
                                 )}
-                                {/* Drop shadow tile */}
-                                <Rect x={3} y={5} width={w} height={h}
-                                    fill="rgba(0,0,0,0.22)" cornerRadius={radius} opacity={0.8} />
+
+                                {/* Hover ring */}
+                                {(isHovered || isLinked) && (
+                                    <Rect x={-5} y={-5} width={w + 10} height={h + 10}
+                                        fill="transparent"
+                                        stroke={isLinked ? '#FFD685' : 'rgba(255,255,255,0.50)'}
+                                        strokeWidth={isLinked ? 2.5 : 1.5}
+                                        cornerRadius={radius + 5} />
+                                )}
+
+                                {/* Drop shadow */}
+                                <Rect x={2} y={3} width={w} height={h}
+                                    fill="rgba(0,0,0,0.35)" cornerRadius={radius} />
+
                                 {/* Main table face */}
                                 <Rect width={w} height={h}
                                     fillLinearGradientStartPoint={{ x: 0, y: 0 }}
@@ -425,27 +407,46 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                                     fillLinearGradientColorStops={stops}
                                     stroke={strokeColor} strokeWidth={strokeW}
                                     cornerRadius={radius}
-                                    shadowColor={isLinked ? 'rgba(246,188,89,0.8)' : isHovered ? 'rgba(255,255,255,0.5)' : 'transparent'}
-                                    shadowBlur={isLinked || isHovered ? 14 : 0} />
-                                {/* Metallic gloss strip at top */}
+                                    shadowColor={glowColor}
+                                    shadowBlur={isLinked || isHovered ? 14 : (table.status !== 'free' ? 8 : 0)} />
+
+                                {/* Inner top highlight — 1px light line for depth */}
                                 {!isSmall && (
-                                    <Rect x={2} y={2} width={w - 4} height={Math.min(h * 0.32, 32)}
-                                        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                                        fillLinearGradientEndPoint={{ x: 0, y: Math.min(h * 0.32, 32) }}
-                                        fillLinearGradientColorStops={[0, 'rgba(255,255,255,0.38)', 0.6, 'rgba(255,255,255,0.10)', 1, 'rgba(255,255,255,0)']}
-                                        cornerRadius={[radius - 1, radius - 1, 0, 0]} />
+                                    <Rect x={3} y={2} width={w - 6} height={1.5}
+                                        fill="rgba(255,255,255,0.25)"
+                                        cornerRadius={1} />
                                 )}
-                                {/* Table number — Montserrat Black, white with drop shadow */}
+
+                                {/* Table number label */}
                                 <Text width={w} height={h} text={table.table_number}
                                     fontSize={fontSize}
                                     fontStyle="bold"
                                     fill={textFill}
                                     align="center" verticalAlign="middle"
                                     fontFamily="'Montserrat', sans-serif"
-                                    shadowColor={darkBg ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.50)'}
-                                    shadowBlur={darkBg ? 3 : 2}
+                                    shadowColor={
+                                        textFill === '#FFFFFF' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.3)'
+                                    }
+                                    shadowBlur={2}
                                     shadowOffsetX={0}
-                                    shadowOffsetY={darkBg ? 1 : 0} />
+                                    shadowOffsetY={1} />
+
+                                {/* Hover tooltip — shows status + capacity */}
+                                {isHovered && !isSmall && (
+                                    <Group x={0} y={-32}>
+                                        <Rect x={0} y={0} width={w} height={24}
+                                            fill="rgba(8,6,12,0.92)"
+                                            stroke="rgba(246,188,89,0.20)"
+                                            strokeWidth={1}
+                                            cornerRadius={6} />
+                                        <Circle x={8} y={12} radius={3}
+                                            fill={getStatusColor(table.status)} />
+                                        <Text x={16} y={4} width={w - 20} height={18}
+                                            text={`${getStatusLabel(table.status)}  ×${table.capacity}`}
+                                            fontSize={10} fill="#C8C0B0"
+                                            fontFamily="'Outfit', sans-serif" />
+                                    </Group>
+                                )}
                             </Group>
                         );
                     })}
@@ -455,36 +456,45 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
 
             {/* ── Zoom controls (bottom-right) ─────────────────────────── */}
             <div style={{
-                position: 'absolute', bottom: 16, right: 16,
-                display: 'flex', flexDirection: 'column', gap: 4,
+                position: 'absolute', bottom: 18, right: 18,
+                display: 'flex', flexDirection: 'column', gap: 5,
                 zIndex: 10,
             }}>
                 {[
-                    { label: '+', action: zoomIn },
+                    { label: '+', action: zoomIn, title: 'Zoom avant' },
                     { label: '⊙', action: resetZoom, title: 'Réinitialiser' },
-                    { label: '−', action: zoomOut },
+                    { label: '−', action: zoomOut, title: 'Zoom arrière' },
                 ].map(({ label, action, title }) => (
                     <button key={label} onClick={action} title={title}
                         style={{
-                            width: 34, height: 34,
-                            background: 'rgba(8,8,14,0.85)',
-                            backdropFilter: 'blur(8px)',
-                            border: '1px solid rgba(200,168,75,0.28)',
-                            borderRadius: 8,
-                            color: '#F6BC59', fontSize: label === '⊙' ? '1rem' : '1.2rem',
+                            width: 40, height: 40,
+                            background: 'rgba(10,8,14,0.90)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(246,188,89,0.22)',
+                            borderRadius: 10,
+                            color: '#F6BC59',
+                            fontSize: label === '⊙' ? '1rem' : '1.3rem',
                             fontWeight: 700, cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             lineHeight: 1,
-                            boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+                            boxShadow: '0 3px 14px rgba(0,0,0,0.5)',
+                            transition: 'border-color 0.2s, background 0.2s',
+                        }}
+                        onMouseEnter={e => {
+                            (e.target as HTMLButtonElement).style.borderColor = 'rgba(246,188,89,0.50)';
+                            (e.target as HTMLButtonElement).style.background = 'rgba(20,16,28,0.95)';
+                        }}
+                        onMouseLeave={e => {
+                            (e.target as HTMLButtonElement).style.borderColor = 'rgba(246,188,89,0.22)';
+                            (e.target as HTMLButtonElement).style.background = 'rgba(10,8,14,0.90)';
                         }}
                     >
                         {label}
                     </button>
                 ))}
-                {/* Scale indicator */}
                 <div style={{
-                    textAlign: 'center', fontSize: '0.6rem', color: '#4a4a5a',
-                    marginTop: 2, userSelect: 'none',
+                    textAlign: 'center', fontSize: '0.6rem', color: 'rgba(246,188,89,0.35)',
+                    marginTop: 2, userSelect: 'none', fontFamily: "'Outfit', sans-serif",
                 }}>
                     {Math.round(stageScale * 100)}%
                 </div>

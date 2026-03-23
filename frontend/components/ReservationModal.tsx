@@ -4,6 +4,7 @@ import { X, User, Phone, DollarSign, CreditCard, Banknote, StickyNote } from 'lu
 import api from '@/lib/api';
 import { useAppStore, TableStatus } from '@/lib/store';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     tables: TableStatus[];   // single or multi (linked)
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ReservationModal({ tables, date, onClose, onSuccess }: Props) {
+    const { t } = useTranslation();
     const { linkedTables, clearLinkedTables } = useAppStore();
     const [form, setForm] = useState({
         customer_name: '',
@@ -29,8 +31,8 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.customer_name.trim()) { toast.error('Nom client requis'); return; }
-        if (!form.total_price) { toast.error('Prix total requis'); return; }
+        if (!form.customer_name.trim()) { toast.error(t('reservationModal.errors.nameRequired')); return; }
+        if (!form.total_price) { toast.error(t('reservationModal.errors.priceRequired')); return; }
 
         setLoading(true);
         try {
@@ -44,12 +46,12 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                 date_reservation: date,
                 notes: form.notes,
             });
-            toast.success('Réservation créée avec succès !');
+            toast.success(t('reservationModal.success'));
             clearLinkedTables();
             onSuccess();
             onClose();
         } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Erreur lors de la création');
+            toast.error(err.response?.data?.error || t('reservationModal.errors.create'));
         } finally {
             setLoading(false);
         }
@@ -61,12 +63,12 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                 {/* Header */}
                 <div style={s.header}>
                     <div>
-                        <h2 style={s.title}>Nouvelle Réservation</h2>
+                        <h2 style={s.title}>{t('reservationModal.title')}</h2>
                         <p style={s.subtitle}>
-                            Table{tables.length > 1 ? 's' : ''}&nbsp;
-                            <span style={{ color: '#f97316', fontWeight: 700 }}>{tableNums}</span>
+                            {tables.length > 1 ? t('reservationModal.tablesPlural') : t('reservationModal.tables')}&nbsp;
+                            <span style={{ color: '#f5e6b8', fontWeight: 700 }}>{tableNums}</span>
                             &nbsp;·&nbsp;
-                            <span style={{ color: '#94a3b8' }}>{new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                            <span style={{ color: 'var(--text-muted)' }}>{new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
                         </p>
                     </div>
                     <button onClick={onClose} style={s.closeBtn}><X size={18} /></button>
@@ -74,9 +76,9 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
 
                 <form onSubmit={handleSubmit} style={s.form}>
                     {/* Client name */}
-                    <Field icon={<User size={14} />} label="Nom du client *">
+                    <Field icon={<User size={14} />} label={t('reservationModal.fields.clientName')}>
                         <input required
-                            placeholder="ex: Mohammed Alami"
+                            placeholder={t('reservationModal.placeholders.clientName')}
                             value={form.customer_name}
                             onChange={e => setForm({ ...form, customer_name: e.target.value })}
                             style={s.input}
@@ -84,10 +86,10 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                     </Field>
 
                     {/* Phone */}
-                    <Field icon={<Phone size={14} />} label="Téléphone">
+                    <Field icon={<Phone size={14} />} label={t('reservationModal.fields.phone')}>
                         <input
                             type="tel"
-                            placeholder="ex: 06 12 34 56 78"
+                            placeholder={t('reservationModal.placeholders.phone')}
                             value={form.customer_phone}
                             onChange={e => setForm({ ...form, customer_phone: e.target.value })}
                             style={s.input}
@@ -96,7 +98,7 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
 
                     {/* Price row */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <Field icon={<DollarSign size={14} />} label="Prix total (DH) *">
+                        <Field icon={<DollarSign size={14} />} label={t('reservationModal.fields.totalPrice')}>
                             <input required type="number" min="0" step="0.01"
                                 placeholder="0.00"
                                 value={form.total_price}
@@ -104,7 +106,7 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                                 style={s.input}
                             />
                         </Field>
-                        <Field icon={<DollarSign size={14} />} label="Avance payée (DH)">
+                        <Field icon={<DollarSign size={14} />} label={t('reservationModal.fields.advance')}>
                             <input type="number" min="0" step="0.01"
                                 placeholder="0.00"
                                 value={form.advance_paid}
@@ -115,28 +117,29 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                     </div>
 
                     {/* Payment method */}
-                    <Field icon={<CreditCard size={14} />} label="Mode de paiement">
+                    <Field icon={<CreditCard size={14} />} label={t('reservationModal.fields.paymentMethod')}>
                         <div style={s.payRow}>
                             {(['cash', 'tpe'] as const).map(m => (
                                 <button key={m} type="button"
                                     onClick={() => setForm({ ...form, payment_method: m })}
                                     style={{
                                         ...s.payBtn,
-                                        background: form.payment_method === m ? (m === 'cash' ? 'rgba(34,197,94,0.15)' : 'rgba(99,102,241,0.15)') : 'transparent',
-                                        borderColor: form.payment_method === m ? (m === 'cash' ? '#22c55e' : '#6366f1') : 'rgba(255,255,255,0.08)',
-                                        color: form.payment_method === m ? (m === 'cash' ? '#22c55e' : '#818cf8') : '#94a3b8',
+                                        background: form.payment_method === m ? (m === 'cash' ? 'rgba(34,197,94,0.15)' : 'rgba(246,188,89,0.15)') : 'rgba(10,10,16,0.6)',
+                                        borderColor: form.payment_method === m ? (m === 'cash' ? '#22c55e' : '#f6bc59') : 'rgba(246,188,89,0.15)',
+                                        color: form.payment_method === m ? (m === 'cash' ? '#22c55e' : '#f6bc59') : '#94a3b8',
+                                        boxShadow: form.payment_method === m ? (m === 'cash' ? '0 0 12px rgba(34,197,94,0.2)' : '0 0 12px rgba(246,188,89,0.2)') : 'none',
                                     }}>
                                     {m === 'cash' ? <Banknote size={14} /> : <CreditCard size={14} />}
-                                    {m === 'cash' ? 'Espèces' : 'TPE / Carte'}
+                                    {m === 'cash' ? t('reservationModal.payment.cash') : t('reservationModal.payment.tpe')}
                                 </button>
                             ))}
                         </div>
                     </Field>
 
                     {/* Notes */}
-                    <Field icon={<StickyNote size={14} />} label="Notes (optionnel)">
+                    <Field icon={<StickyNote size={14} />} label={t('reservationModal.fields.notes')}>
                         <textarea rows={2}
-                            placeholder="Allergies, demandes spéciales..."
+                            placeholder={t('reservationModal.placeholders.notes')}
                             value={form.notes}
                             onChange={e => setForm({ ...form, notes: e.target.value })}
                             style={{ ...s.input, resize: 'none' }}
@@ -146,8 +149,8 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
                     {/* Balance */}
                     {form.total_price && (
                         <div style={s.balanceRow}>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Reste à payer</span>
-                            <span style={{ color: parseFloat(form.advance_paid || '0') >= parseFloat(form.total_price) ? '#22c55e' : '#f97316', fontWeight: 700 }}>
+                            <span style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 600 }}>{t('reservationModal.balance')}</span>
+                            <span style={{ color: parseFloat(form.advance_paid || '0') >= parseFloat(form.total_price) ? '#22c55e' : '#f97316', fontWeight: 800, fontSize: '1.05rem', textShadow: '0 0 10px rgba(0,0,0,0.5)' }}>
                                 {(parseFloat(form.total_price) - parseFloat(form.advance_paid || '0')).toFixed(2)} DH
                             </span>
                         </div>
@@ -155,9 +158,9 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
 
                     {/* Buttons */}
                     <div style={s.footer}>
-                        <button type="button" onClick={onClose} style={s.cancelBtn}>Annuler</button>
+                        <button type="button" onClick={onClose} style={s.cancelBtn}>{t('reservationModal.actions.cancel')}</button>
                         <button type="submit" disabled={loading} style={{ ...s.submitBtn, opacity: loading ? 0.7 : 1 }}>
-                            {loading ? 'Enregistrement...' : '✓ Confirmer la réservation'}
+                            {loading ? t('reservationModal.actions.saving') : t('reservationModal.actions.confirm')}
                         </button>
                     </div>
                 </form>
@@ -168,9 +171,9 @@ export default function ReservationModal({ tables, date, onClose, onSuccess }: P
 
 function Field({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', fontWeight: 500, color: '#94a3b8' }}>
-                <span style={{ color: '#f97316' }}>{icon}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', fontWeight: 500, color: '#f5e6b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ color: '#c8a84b' }}>{icon}</span>
                 {label}
             </label>
             {children}
@@ -180,48 +183,53 @@ function Field({ icon, label, children }: { icon: React.ReactNode; label: string
 
 const s: Record<string, React.CSSProperties> = {
     overlay: {
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16,
     },
     modal: {
-        background: '#13131c', borderRadius: 16, border: '1px solid rgba(249,115,22,0.25)',
+        background: 'rgba(15,15,20,0.95)', borderRadius: 16, border: '1px solid rgba(246,188,89,0.25)',
         width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'auto',
-        boxShadow: '0 24px 60px rgba(0,0,0,0.7), 0 0 80px rgba(249,115,22,0.08)',
+        boxShadow: '0 30px 60px rgba(0,0,0,0.8), 0 0 120px rgba(246,188,89,0.1)',
     },
     header: {
-        padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '24px 28px', borderBottom: '1px solid rgba(246,188,89,0.1)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        background: 'linear-gradient(to bottom, rgba(246,188,89,0.06), transparent)',
     },
-    title: { fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9', marginBottom: 4 },
-    subtitle: { fontSize: '0.8rem', color: '#64748b' },
+    title: { fontSize: '1.25rem', fontWeight: 800, color: '#f5e6b8', marginBottom: 6, fontFamily: 'var(--font-cinzel), serif', letterSpacing: '0.05em' },
+    subtitle: { fontSize: '0.8rem', color: 'var(--text-muted)' },
     closeBtn: {
-        background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 8, padding: 6, cursor: 'pointer', color: '#94a3b8', display: 'flex',
+        background: 'rgba(246,188,89,0.08)', border: '1px solid rgba(246,188,89,0.2)',
+        borderRadius: 10, padding: 8, cursor: 'pointer', color: '#c8a84b', display: 'flex',
+        transition: 'all 0.2s',
     },
-    form: { padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 },
+    form: { padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 18 },
     input: {
-        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 8, color: '#f1f5f9', fontSize: '0.875rem', padding: '10px 12px', outline: 'none', width: '100%',
+        background: 'rgba(10,10,16,0.8)', border: '1px solid rgba(246,188,89,0.15)',
+        borderRadius: 12, color: '#f5e6b8', fontSize: '0.9rem', padding: '12px 14px', outline: 'none', width: '100%',
+        boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.4)', transition: 'all 0.2s ease',
     },
-    payRow: { display: 'flex', gap: 8 },
+    payRow: { display: 'flex', gap: 10 },
     payBtn: {
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        padding: '9px 12px', border: '1px solid', borderRadius: 8, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500,
-        transition: 'all 0.15s',
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        padding: '12px', border: '1px solid', borderRadius: 12, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     },
     balanceRow: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '10px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.06)',
+        padding: '14px 18px', background: 'rgba(246,188,89,0.05)', borderRadius: 12,
+        border: '1px dashed rgba(246,188,89,0.25)',
     },
-    footer: { display: 'flex', gap: 10, marginTop: 4 },
+    footer: { display: 'flex', gap: 12, marginTop: 8 },
     cancelBtn: {
-        flex: 1, padding: '11px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 9, color: '#94a3b8', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500,
+        flex: 1, padding: '14px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 12, color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600,
+        transition: 'all 0.2s',
     },
     submitBtn: {
-        flex: 2, padding: '11px', background: 'linear-gradient(135deg,#f97316,#ea580c)',
-        border: 'none', borderRadius: 9, color: '#fff', fontWeight: 700, fontSize: '0.875rem',
-        cursor: 'pointer', boxShadow: '0 4px 16px rgba(249,115,22,0.3)',
+        flex: 2, padding: '14px', background: 'linear-gradient(135deg, rgba(200,168,75,0.9), rgba(160,120,40,0.9))',
+        border: '1px solid rgba(246,188,89,0.4)', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: '0.95rem',
+        cursor: 'pointer', boxShadow: '0 4px 20px rgba(200,168,75,0.3)', textTransform: 'uppercase', letterSpacing: '0.05em',
+        transition: 'all 0.2s', textShadow: '0 1px 2px rgba(0,0,0,0.5)',
     },
 };

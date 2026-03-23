@@ -6,24 +6,27 @@ import { useAppStore, TableStatus } from '@/lib/store';
 import ReservationModal from '@/components/ReservationModal';
 import toast from 'react-hot-toast';
 import { Link2, Link2Off, RefreshCw, Calendar, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const FloorMap = dynamic(() => import('@/components/FloorMap'), { ssr: false });
 
-const LEGEND = [
-    { label: 'Libre',   color: '#c8a84b' },
-    { label: 'Réservé', color: '#dc2626' },
-    { label: 'Occupé',  color: '#d97706' },
-    { label: 'VIP',     color: '#7c3aed' },
+const getLegend = (t: any) => [
+    { label: t('plan.legend.free'), color: '#5ea488', shape: 'circle' },
+    { label: t('plan.legend.reserved'), color: '#E83838', shape: 'circle' },
+    { label: t('plan.legend.occupied'), color: '#ed610c', shape: 'circle' },
+    { label: t('plan.legend.vip'), color: '#a63a96', shape: 'circle' },
 ];
 
 export default function PlanPage() {
+    const { t } = useTranslation();
+    const LEGEND = getLegend(t);
     const {
         selectedDate, setSelectedDate,
         tableStatuses, setTableStatuses,
         linkMode, toggleLinkMode,
         linkedTables, clearLinkedTables,
     } = useAppStore();
-    const [loading, setLoading]         = useState(false);
+    const [loading, setLoading] = useState(false);
     const [modalTables, setModalTables] = useState<TableStatus[] | null>(null);
 
     const fetchStatuses = useCallback(async () => {
@@ -32,18 +35,18 @@ export default function PlanPage() {
             const { data } = await api.get(`/tables/status?date=${selectedDate}`);
             setTableStatuses(data);
         } catch {
-            toast.error('Impossible de charger le plan');
+            toast.error(t('plan.messages.loadError'));
         } finally {
             setLoading(false);
         }
-    }, [selectedDate, setTableStatuses]);
+    }, [selectedDate, setTableStatuses, t]);
 
     useEffect(() => { fetchStatuses(); }, [fetchStatuses]);
 
     const handleTableClick = (table: TableStatus) => {
         if (table.status !== 'free') {
             toast.error(
-                `Table ${table.table_number} est déjà ${table.status === 'reserved' ? 'réservée' : 'occupée'}`
+                t('plan.messages.alreadyTaken', { number: table.table_number, status: table.status === 'reserved' ? t('plan.status.reserved') : t('plan.status.occupied') })
             );
             return;
         }
@@ -52,17 +55,17 @@ export default function PlanPage() {
 
     const handleGroupReserve = () => {
         const selected = tableStatuses.filter((t: TableStatus) => linkedTables.includes(t.id));
-        const nonFree  = selected.filter((t: TableStatus) => t.status !== 'free');
+        const nonFree = selected.filter((t: TableStatus) => t.status !== 'free');
         if (nonFree.length > 0) {
-            toast.error(`Table(s) ${nonFree.map((t: TableStatus) => t.table_number).join(', ')} non disponible(s)`);
+            toast.error(t('plan.messages.tablesNotAvailable', { tables: nonFree.map((t: TableStatus) => t.table_number).join(', ') }));
             return;
         }
-        if (selected.length === 0) { toast.error('Sélectionnez au moins une table'); return; }
+        if (selected.length === 0) { toast.error(t('plan.messages.selectAtLeastOne')); return; }
         setModalTables(selected);
     };
 
     return (
-        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', background: '#1A1410' }}>
+        <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', background: '#060608' }}>
 
             {/* ── MAP (full screen) ───────────────────────────────── */}
             <div style={{ position: 'absolute', inset: 0 }}>
@@ -71,81 +74,92 @@ export default function PlanPage() {
                 ) : (
                     <div style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        height: '100%', color: '#c8a84b', fontSize: '0.9rem', letterSpacing: '0.05em',
+                        height: '100%', color: '#F6BC59', fontSize: '0.9rem',
+                        letterSpacing: '0.05em', fontFamily: "'Outfit', sans-serif",
                     }}>
-                        {loading ? 'Chargement du plan...' : 'Aucune donnée disponible'}
+                        {loading ? t('plan.loading') : t('plan.noData')}
                     </div>
                 )}
             </div>
 
             {/* ── OVERLAY CONTROL BAR (top) ───────────────────────── */}
             <div style={{
-                position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
-                display: 'flex', alignItems: 'center', gap: 8,
-                background: 'rgba(8,8,14,0.82)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(200,168,75,0.2)',
-                borderRadius: 12,
-                padding: '6px 12px',
+                position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: 'rgba(10,8,14,0.88)',
+                backdropFilter: 'blur(14px)',
+                WebkitBackdropFilter: 'blur(14px)',
+                border: '1px solid rgba(246,188,89,0.18)',
+                borderRadius: 14,
+                padding: '8px 16px',
                 zIndex: 20,
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+                boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 1px rgba(246,188,89,0.15)',
                 flexWrap: 'wrap',
                 maxWidth: 'calc(100vw - 40px)',
+                fontFamily: "'Outfit', sans-serif",
             }}>
                 {/* Date picker */}
                 <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    background: 'rgba(200,168,75,0.07)',
-                    border: '1px solid rgba(200,168,75,0.18)',
-                    borderRadius: 7, padding: '5px 10px', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 7,
+                    background: 'rgba(246,188,89,0.06)',
+                    border: '1px solid rgba(246,188,89,0.15)',
+                    borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
                 }}>
-                    <Calendar size={12} color="#c8a84b" />
+                    <Calendar size={13} color="#F6BC59" />
                     <input
                         type="date"
                         value={selectedDate}
                         onChange={(e: { target: { value: string } }) => setSelectedDate(e.target.value)}
                         style={{
                             background: 'transparent', border: 'none',
-                            color: '#f5e6b8', fontSize: '0.78rem', outline: 'none',
+                            color: '#F0E4C0', fontSize: '0.8rem', outline: 'none',
                             cursor: 'pointer', fontFamily: 'inherit',
                         }}
                     />
                 </div>
 
-                <div style={{ width: 1, height: 16, background: 'rgba(200,168,75,0.15)', flexShrink: 0 }} />
+                <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
 
                 {/* Link-mode toggle */}
                 <button onClick={toggleLinkMode} style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '5px 10px', borderRadius: 7, border: '1px solid',
-                    cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
-                    background:  linkMode ? 'rgba(249,115,22,0.15)' : 'transparent',
-                    borderColor: linkMode ? '#f97316'               : 'rgba(200,168,75,0.2)',
-                    color:       linkMode ? '#f97316'               : '#c8a84b',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 12px', borderRadius: 8, border: '1px solid',
+                    cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+                    fontFamily: 'inherit',
+                    background: linkMode ? 'rgba(246,188,89,0.12)' : 'transparent',
+                    borderColor: linkMode ? '#F6BC59' : 'rgba(246,188,89,0.15)',
+                    color: linkMode ? '#F6BC59' : '#C8B880',
                     transition: 'all 0.18s', whiteSpace: 'nowrap',
                 }}>
-                    {linkMode ? <Link2 size={12} /> : <Link2Off size={12} />}
-                    {linkMode ? 'Lier ON' : 'Mode Lier'}
+                    {linkMode ? <Link2 size={13} /> : <Link2Off size={13} />}
+                    {linkMode ? t('plan.linkMode.on') : t('plan.linkMode.off')}
                 </button>
 
                 {/* Refresh */}
                 <button onClick={fetchStatuses} disabled={loading} style={{
-                    width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'transparent', border: '1px solid rgba(200,168,75,0.18)',
-                    borderRadius: 7, cursor: 'pointer', color: '#c8a84b', flexShrink: 0,
+                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'transparent', border: '1px solid rgba(246,188,89,0.15)',
+                    borderRadius: 8, cursor: 'pointer', color: '#C8B880', flexShrink: 0,
+                    transition: 'border-color 0.2s',
                 }}>
-                    <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                    <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
                 </button>
 
-                <div style={{ width: 1, height: 16, background: 'rgba(200,168,75,0.15)', flexShrink: 0 }} />
+                <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
 
                 {/* Legend */}
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                     {LEGEND.map(({ label, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-                            <span style={{ fontSize: '0.65rem', color: '#70718a', whiteSpace: 'nowrap' }}>{label}</span>
+                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <div style={{
+                                width: 7, height: 7, borderRadius: '50%',
+                                background: color, flexShrink: 0,
+                                boxShadow: `0 0 6px ${color}55`,
+                            }} />
+                            <span style={{
+                                fontSize: '0.68rem', color: '#8888A0',
+                                whiteSpace: 'nowrap', fontWeight: 500,
+                            }}>{label}</span>
                         </div>
                     ))}
                 </div>
@@ -154,36 +168,50 @@ export default function PlanPage() {
             {/* ── Floating link-mode action bar (bottom) ──────────── */}
             {linkMode && linkedTables.length > 0 && (
                 <div style={{
-                    position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-                    display: 'flex', gap: 10, alignItems: 'center',
-                    background: 'rgba(8,8,14,0.96)',
-                    border: '1px solid rgba(249,115,22,0.45)',
-                    borderRadius: 12, padding: '10px 18px',
+                    position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)',
+                    display: 'flex', gap: 12, alignItems: 'center',
+                    background: 'rgba(10,8,14,0.94)',
+                    backdropFilter: 'blur(14px)',
+                    border: '1px solid rgba(246,188,89,0.35)',
+                    borderRadius: 14, padding: '12px 20px',
                     zIndex: 30,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.7), 0 0 24px rgba(249,115,22,0.15)',
+                    boxShadow: '0 10px 36px rgba(0,0,0,0.7), 0 0 20px rgba(246,188,89,0.10)',
                     whiteSpace: 'nowrap',
+                    fontFamily: "'Outfit', sans-serif",
+                    animation: 'fade-in 0.25s ease-out',
                 }}>
-                    <span style={{ fontSize: '0.78rem', color: '#c8a84b', fontWeight: 600 }}>
-                        {linkedTables.length} table{linkedTables.length > 1 ? 's' : ''} sélectionnée{linkedTables.length > 1 ? 's' : ''}
+                    <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 28, height: 28, borderRadius: 8,
+                        background: 'rgba(246,188,89,0.12)',
+                        color: '#F6BC59', fontSize: '0.85rem', fontWeight: 800,
+                    }}>
+                        {linkedTables.length}
+                    </div>
+                    <span style={{ fontSize: '0.82rem', color: '#C8B880', fontWeight: 500 }}>
+                        {linkedTables.length > 1 ? t('plan.selectedTablesPlural', { count: '' }) : t('plan.selectedTables', { count: '' })}
                     </span>
 
                     <button onClick={clearLinkedTables} style={{
                         display: 'flex', alignItems: 'center', gap: 4,
-                        padding: '6px 10px', background: 'transparent',
-                        border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7,
-                        color: '#64748b', cursor: 'pointer', fontSize: '0.75rem',
+                        padding: '7px 12px', background: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8,
+                        color: '#8888A0', cursor: 'pointer', fontSize: '0.78rem',
+                        fontFamily: 'inherit', transition: 'border-color 0.2s',
                     }}>
-                        <X size={11} /> Annuler
+                        <X size={12} /> {t('plan.actions.cancel')}
                     </button>
 
                     <button onClick={handleGroupReserve} style={{
-                        padding: '8px 18px', borderRadius: 8,
-                        background: 'linear-gradient(135deg,#f97316,#ea580c)',
-                        border: 'none', color: '#fff', fontWeight: 700,
+                        padding: '9px 20px', borderRadius: 10,
+                        background: 'linear-gradient(135deg, #F6BC59, #D89718)',
+                        border: 'none', color: '#0A0806', fontWeight: 700,
                         fontSize: '0.85rem', cursor: 'pointer',
-                        boxShadow: '0 4px 16px rgba(249,115,22,0.45)',
+                        fontFamily: 'inherit',
+                        boxShadow: '0 4px 18px rgba(246,188,89,0.35)',
+                        transition: 'box-shadow 0.2s',
                     }}>
-                        Réserver {linkedTables.length} table{linkedTables.length > 1 ? 's' : ''}
+                        {linkedTables.length > 1 ? t('plan.actions.reservePlural', { count: linkedTables.length }) : t('plan.actions.reserve', { count: linkedTables.length })}
                     </button>
                 </div>
             )}

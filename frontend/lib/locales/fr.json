@@ -1,0 +1,291 @@
+{
+  "login": {
+    "title": "TIGER CLUB",
+    "subtitle": "VIP SYSTEM",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "submit": "ENTRER",
+    "loading": "Connexion...",
+    "emptyFields": "Veuillez remplir tous les champs",
+    "error": "Erreur de connexion",
+    "welcome": "Bienvenue, {{username}} !",
+    "footer": "Tiger Club"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "reservations": "Réservations",
+    "plan": "Plan de Salle",
+    "users": "Utilisateurs",
+    "tables": "Tables",
+    "logs": "Audit Logs"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "ANALYTIQUES",
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois",
+    "reservations": "RÉS.",
+    "currency": "DH",
+    "advances": "AVANCES :",
+    "revenueTitle": "CHIFFRE D'AFFAIRES",
+    "cash": "ESPÈCES",
+    "tpe": "TPE",
+    "all": "TOUS",
+    "daily": "Jours",
+    "weekly": "Semaines",
+    "monthly": "Mois",
+    "loading": "Chargement des données...",
+    "noData": "Aucune donnée pour cette période",
+    "cashTitle": "Espèces: {{amount}} DH",
+    "tpeTitle": "TPE: {{amount}} DH",
+    "cashLegend": "Espèces",
+    "tpeLegend": "TPE"
+  },
+  "reservations": {
+    "title": "RÉSERVATIONS",
+    "searchPlaceholder": "Nom ou téléphone...",
+    "loading": "Chargement...",
+    "noData": "Aucune réservation trouvée",
+    "noPhone": "Sans téléphone",
+    "table": "Tab",
+    "advance": "Avance",
+    "status": {
+      "reserved": "Réservé",
+      "occupied": "Occupé",
+      "cancelled": "Annulé"
+    },
+    "stats": {
+      "total": "TOTAL",
+      "reserved": "RÉSERVÉES",
+      "revenue": "CA TOTAL"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "prompts": {
+      "cancel": "Annuler cette réservation ?"
+    },
+    "messages": {
+      "loadError": "Erreur chargement réservations",
+      "updateSuccess": "Réservation mise à jour",
+      "cancelSuccess": "Réservation annulée",
+      "error": "Erreur"
+    },
+    "tableHeaders": {
+      "tables": "Tables",
+      "client": "Client",
+      "phone": "Téléphone",
+      "date": "Date",
+      "price": "Prix",
+      "advance": "Avance",
+      "payment": "Paiement",
+      "status": "Statut",
+      "cashier": "Caissier",
+      "actions": "Actions"
+    },
+    "payment": {
+      "cash": "Espèces",
+      "tpe": "TPE"
+    },
+    "modal": {
+      "title": "Modifier #{{id}}",
+      "clientName": "Nom du Client",
+      "phone": "Téléphone",
+      "status": "Statut",
+      "totalPrice": "Prix Total (DH)",
+      "advance": "Avance (DH)",
+      "paymentMethod": "Mode Paiement",
+      "notes": "Notes"
+    }
+  },
+  "plan": {
+    "loading": "Chargement du plan…",
+    "noData": "Aucune donnée disponible",
+    "legend": {
+      "free": "Libre",
+      "reserved": "Réservé",
+      "occupied": "Occupé",
+      "vip": "VIP"
+    },
+    "status": {
+      "reserved": "réservée",
+      "occupied": "occupée"
+    },
+    "linkMode": {
+      "on": "Lier ON",
+      "off": "Mode Lier"
+    },
+    "selectedTables": "table sélectionnée",
+    "selectedTablesPlural": "tables sélectionnées",
+    "actions": {
+      "cancel": "Annuler",
+      "reserve": "Réserver {{count}} table",
+      "reservePlural": "Réserver {{count}} tables"
+    },
+    "messages": {
+      "loadError": "Impossible de charger le plan",
+      "alreadyTaken": "Table {{number}} est déjà {{status}}",
+      "tablesNotAvailable": "Table(s) {{tables}} non disponible(s)",
+      "selectAtLeastOne": "Sélectionnez au moins une table"
+    }
+  },
+  "reservationModal": {
+    "title": "Nouvelle Réservation",
+    "tables": "Table",
+    "tablesPlural": "Tables",
+    "fields": {
+      "clientName": "Nom du client *",
+      "phone": "Téléphone",
+      "totalPrice": "Prix total (DH) *",
+      "advance": "Avance payée (DH)",
+      "paymentMethod": "Mode de paiement",
+      "notes": "Notes (optionnel)"
+    },
+    "placeholders": {
+      "clientName": "ex: Mohammed Alami",
+      "phone": "ex: 06 12 34 56 78",
+      "notes": "Allergies, demandes spéciales..."
+    },
+    "payment": {
+      "cash": "Espèces",
+      "tpe": "TPE / Carte"
+    },
+    "balance": "Reste à payer",
+    "actions": {
+      "cancel": "Annuler",
+      "saving": "Enregistrement...",
+      "confirm": "✓ Confirmer la réservation"
+    },
+    "errors": {
+      "nameRequired": "Nom client requis",
+      "priceRequired": "Prix total requis",
+      "create": "Erreur lors de la création"
+    },
+    "success": "Réservation créée avec succès !"
+  },
+  "adminUsers": {
+    "title": "GESTION DES CAISSIERS",
+    "loading": "Chargement...",
+    "roles": {
+      "caissier": "Caissier",
+      "admin": "Admin"
+    },
+    "status": {
+      "active": "Actif",
+      "revoked": "Révoqué"
+    },
+    "fields": {
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "role": "Rôle"
+    },
+    "actions": {
+      "newCashier": "Nouveau caissier",
+      "create": "Créer",
+      "cancel": "Annuler",
+      "revoke": "Révoquer",
+      "restore": "Restaurer"
+    },
+    "tableHeaders": {
+      "id": "#",
+      "user": "Utilisateur",
+      "role": "Rôle",
+      "status": "Statut",
+      "createdAt": "Créé le",
+      "actions": "Actions"
+    },
+    "messages": {
+      "loadError": "Erreur chargement utilisateurs",
+      "createSuccess": "Utilisateur créé",
+      "accessRevoked": "Accès révoqué",
+      "accessRestored": "Accès restauré",
+      "error": "Erreur"
+    }
+  },
+  "adminLogs": {
+    "title": "AUDIT LOGS",
+    "totalEntries": "{{count}} entrée",
+    "totalEntries_plural": "{{count}} entrées",
+    "filterPlaceholder": "Filtrer par action...",
+    "loading": "Chargement...",
+    "noData": "Aucun log trouvé",
+    "actions": {
+      "LOGIN": "Connexion",
+      "CREATE_RESERVATION": "Nouvelle Réservation",
+      "UPDATE_RESERVATION": "Modification",
+      "CANCEL_RESERVATION": "Annulation",
+      "CREATE_USER": "Nouvel Utilisateur",
+      "UPDATE_USER": "Mise à jour Profil"
+    },
+    "descriptions": {
+      "LOGIN": "Connexion à la session sécurisée",
+      "CREATE_RESERVATION": "Création de la réservation #{{id}} pour {{customer}}",
+      "unknownCustomer": "Inconnu",
+      "UPDATE_RESERVATION": "Modification réservation #{{id}}{{changes}}",
+      "statusChange": "statut: {{old}}→{{new}}",
+      "priceChange": "prix: {{old}}→{{new}}DH",
+      "CANCEL_RESERVATION": "Annulation de la réservation #{{id}}",
+      "CREATE_USER": "Création du compte utilisateur \"{{username}}\" ({{role}})",
+      "UPDATE_USER": "Mise à jour du profil utilisateur \"{{username}}\""
+    },
+    "tableHeaders": {
+      "id": "#",
+      "user": "Utilisateur",
+      "action": "Action",
+      "details": "Détails",
+      "datetime": "Date & Heure"
+    },
+    "pagination": {
+      "prev": "← Précédent",
+      "page": "Page {{page}}",
+      "next": "Suivant →"
+    },
+    "messages": {
+      "loadError": "Erreur chargement logs"
+    }
+  },
+  "adminTables": {
+    "title": "ÉDITEUR DE PLAN",
+    "subtitle": "{{count}} tables • Glissez pour repositionner",
+    "saving": "Sauvegarde…",
+    "refresh": "Actualiser",
+    "newTable": "NOUVELLE TABLE",
+    "selectedTable": "TABLE SÉLECTIONNÉE",
+    "loadingMap": "Chargement du plan…",
+    "fields": {
+      "number": "NUMÉRO",
+      "zone": "ZONE / COULEUR",
+      "capacity": "CAPACITÉ",
+      "size": "TAILLE",
+      "position": "Position"
+    },
+    "placeholders": {
+      "number": "ex: 52, VIP5, 08C…"
+    },
+    "actions": {
+      "cancelPlacement": "Annuler le placement",
+      "placeOnMap": "Placer sur la carte",
+      "update": "Mettre à jour"
+    },
+    "instructions": {
+      "placement": "Déplacez le curseur sur le plan et cliquez pour déposer la table à l'emplacement souhaité.",
+      "select": "Cliquez sur une table du plan pour la sélectionner et modifier ses propriétés."
+    },
+    "messages": {
+      "loadError": "Impossible de charger les tables",
+      "savePositionError": "Erreur lors de la sauvegarde de la position",
+      "numberRequired": "Veuillez saisir un numéro de table",
+      "createSuccess": "Table \"{{table_number}}\" créée",
+      "createError": "Erreur lors de la création",
+      "updateSuccess": "Table mise à jour",
+      "updateError": "Erreur mise à jour",
+      "deleteConfirm": "Supprimer la table \"{{table_number}}\" ?\nCette action est irréversible.",
+      "deleteSuccess": "Table supprimée",
+      "deleteError": "Impossible de supprimer (réservations actives ?)",
+      "enterNumber": "Entrez un numéro de table"
+    }
+  }
+}

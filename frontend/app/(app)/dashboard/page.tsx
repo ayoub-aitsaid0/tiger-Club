@@ -2,11 +2,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { Calendar, CalendarDays, BarChart3, TrendingUp, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface Summary { total: number; advance: number; count: number; }
 interface DayBreakdown { date: string; total: number; cash: number; tpe: number; count: number; }
 
 export default function DashboardPage() {
+    const { t } = useTranslation();
     const [summary, setSummary] = useState<{ daily: Summary; weekly: Summary; monthly: Summary } | null>(null);
     const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
     const [payFilter, setPayFilter] = useState<'all' | 'cash' | 'tpe'>('all');
@@ -31,85 +35,115 @@ export default function DashboardPage() {
     const maxTotal = Math.max(...breakdown.map(d => d.total), 1);
 
     return (
-        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20, overflow: 'auto', height: '100%' }}>
+        <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: 32, overflow: 'auto', height: '100%', WebkitOverflowScrolling: 'touch' }}
+        >
 
-            <h1 style={{ fontWeight: 700, fontSize: '1.15rem' }}>📊 Dashboard & Analytiques</h1>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' }}>
+                <h1 className="luxury-text" style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '2rem', margin: 0, textTransform: 'uppercase' }}>
+                    <Sparkles size={28} color="var(--gold)" />
+                    {t('dashboard.title')} <span style={{ color: 'var(--text-muted)', fontSize: '1rem', letterSpacing: '0.2em', fontWeight: 600 }}>{t('dashboard.subtitle')}</span>
+                </h1>
+            </div>
 
             {/* Summary cards */}
             {summary && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
                     {([
-                        { label: "Aujourd'hui", data: summary.daily, color: '#f97316', icon: '📅' },
-                        { label: 'Cette semaine', data: summary.weekly, color: '#22c55e', icon: '📆' },
-                        { label: 'Ce mois', data: summary.monthly, color: '#a855f7', icon: '🗓️' },
-                    ] as const).map(({ label, data, color, icon }) => (
-                        <div key={label} style={{ background: 'var(--bg-card)', borderRadius: 12, border: `1px solid ${color}22`, padding: '14px 16px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{icon} {label}</span>
-                                <span style={{ fontSize: '0.68rem', padding: '2px 7px', borderRadius: 4, background: `${color}18`, color }}>{data.count} rés.</span>
+                        { label: t('dashboard.today'), data: summary.daily, color: 'var(--gold)', icon: <TrendingUp size={16} />, delay: 0.1 },
+                        { label: t('dashboard.thisWeek'), data: summary.weekly, color: 'var(--zone-teal)', icon: <Calendar size={16} />, delay: 0.2 },
+                        { label: t('dashboard.thisMonth'), data: summary.monthly, color: 'var(--zone-purple)', icon: <CalendarDays size={16} />, delay: 0.3 },
+                    ] as const).map(({ label, data, color, icon, delay }) => (
+                        <motion.div 
+                            key={label} 
+                            className="glass-panel"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+                            style={{ padding: '32px', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, background: `radial-gradient(circle, ${color}20 0%, transparent 60%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, position: 'relative', zIndex: 1 }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    {icon} {label}
+                                </span>
+                                <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '20px', background: `${color}10`, color, fontWeight: 700, border: `1px solid ${color}30`, boxShadow: `0 0 16px ${color}15`, letterSpacing: '0.05em' }}>{data.count} {t('dashboard.reservations')}</span>
                             </div>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800, color, marginBottom: 3, lineHeight: 1 }}>
-                                {data.total.toLocaleString('fr-FR')} <span style={{ fontSize: '0.75rem', fontWeight: 500 }}>DH</span>
+                            <div className="luxury-text" style={{ fontSize: '2.8rem', marginBottom: 8, lineHeight: 1, position: 'relative', zIndex: 1, background: `linear-gradient(135deg, #fff, ${color})`, WebkitBackgroundClip: 'text', textShadow: `0 4px 24px ${color}30` }}>
+                                {data.total.toLocaleString('fr-FR')} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', textShadow: 'none', letterSpacing: '0.05em' }}>{t('dashboard.currency')}</span>
                             </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-                                Avances : {data.advance.toLocaleString('fr-FR')} DH
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500, marginTop: 12, position: 'relative', zIndex: 1, letterSpacing: '0.05em' }}>
+                                {t('dashboard.advances')} <span style={{ color: '#fff', fontWeight: 600 }}>{data.advance.toLocaleString('fr-FR')} {t('dashboard.currency')}</span>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             )}
 
-            {/* Chart filters */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Période :</span>
-                {(['daily', 'weekly', 'monthly'] as const).map(p => (
-                    <button key={p} onClick={() => setPeriod(p)} style={{
-                        padding: '5px 12px', borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: '0.78rem',
-                        background: period === p ? 'rgba(249,115,22,0.15)' : 'transparent',
-                        borderColor: period === p ? '#f97316' : 'rgba(255,255,255,0.1)',
-                        color: period === p ? '#f97316' : 'var(--text-secondary)',
-                    }}>
-                        {p === 'daily' ? 'Jour' : p === 'weekly' ? 'Semaine' : 'Mois'}
-                    </button>
-                ))}
-                <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 2px' }} />
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Paiement :</span>
-                {(['all', 'cash', 'tpe'] as const).map(m => (
-                    <button key={m} onClick={() => setPayFilter(m)} style={{
-                        padding: '5px 12px', borderRadius: 8, border: '1px solid', cursor: 'pointer', fontSize: '0.78rem',
-                        background: payFilter === m ? 'rgba(99,102,241,0.15)' : 'transparent',
-                        borderColor: payFilter === m ? '#6366f1' : 'rgba(255,255,255,0.1)',
-                        color: payFilter === m ? '#818cf8' : 'var(--text-secondary)',
-                    }}>
-                        {m === 'all' ? 'Tous' : m === 'cash' ? 'Espèces' : 'TPE'}
-                    </button>
-                ))}
-            </div>
+            {/* Chart Container */}
+            <motion.div 
+                className="glass-panel" 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+                    <h3 className="luxury-text" style={{ fontSize: '1.4rem', margin: 0, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                        {t('dashboard.revenueTitle')} <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'var(--font-body)', verticalAlign: 'middle', marginLeft: 12 }}>{payFilter !== 'all' ? `• ${payFilter === 'cash' ? t('dashboard.cash') : t('dashboard.tpe')}` : ''}</span>
+                    </h3>
 
-            {/* Bar chart */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border)', padding: '18px 20px' }}>
-                <h3 style={{ fontSize: '0.87rem', fontWeight: 600, marginBottom: 18, color: 'var(--text-secondary)' }}>
-                    CA par jour {payFilter !== 'all' ? `(${payFilter === 'cash' ? 'Espèces' : 'TPE'})` : ''}
-                </h3>
+                    {/* Chart filters */}
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, border: '1px solid var(--border)' }}>
+                            {(['daily', 'weekly', 'monthly'] as const).map(p => (
+                                <button key={p} onClick={() => setPeriod(p)} style={{
+                                    padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
+                                    background: period === p ? 'rgba(246,188,89,0.15)' : 'transparent',
+                                    color: period === p ? '#F6BC59' : 'var(--text-secondary)',
+                                }}>
+                                    {t(`dashboard.${p}`)}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, border: '1px solid var(--border)' }}>
+                            {(['all', 'cash', 'tpe'] as const).map(m => (
+                                <button key={m} onClick={() => setPayFilter(m)} style={{
+                                    padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, transition: 'all 0.2s',
+                                    background: payFilter === m ? 'rgba(27,150,132,0.15)' : 'transparent',
+                                    color: payFilter === m ? '#1B9684' : 'var(--text-secondary)',
+                                }}>
+                                    {t(`dashboard.${m}`)}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
                 {loading ? (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Chargement...</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 60, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t('dashboard.loading')}</div>
                 ) : breakdown.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>Aucune donnée pour cette période</div>
+                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 60, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t('dashboard.noData')}</div>
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 180, overflowX: 'auto', paddingBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flex: 1, minHeight: 220, overflowX: 'auto', paddingBottom: 8, paddingLeft: 4, paddingRight: 4, WebkitOverflowScrolling: 'touch' }}>
                         {breakdown.map((d) => {
-                            const cashH = (d.cash / maxTotal) * 155;
-                            const tpeH = (d.tpe / maxTotal) * 155;
+                            const cashH = (d.cash / maxTotal) * 100; // Intentionally 100% to fill container nicely
+                            const tpeH = (d.tpe / maxTotal) * 100;
                             return (
-                                <div key={d.date} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 48, flex: 1 }}>
-                                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginBottom: 2, whiteSpace: 'nowrap' }}>
-                                        {d.total.toLocaleString('fr-FR')}
+                                <div key={d.date} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 60, flex: 1, height: '100%' }}>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 'auto', marginBottom: 4, whiteSpace: 'nowrap', fontWeight: 600, letterSpacing: '0.02em' }}>
+                                        {d.total > 0 ? d.total.toLocaleString('fr-FR') : ''}
                                     </div>
-                                    <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 155 }}>
-                                        <div style={{ width: 14, height: Math.max(cashH, 2), background: 'linear-gradient(to top,#15803d,#22c55e)', borderRadius: '3px 3px 0 0', transition: 'height 0.3s' }} title={`Espèces: ${d.cash} DH`} />
-                                        <div style={{ width: 14, height: Math.max(tpeH, 2), background: 'linear-gradient(to top,#4338ca,#818cf8)', borderRadius: '3px 3px 0 0', transition: 'height 0.3s' }} title={`TPE: ${d.tpe} DH`} />
+                                    <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: '100%', minHeight: 180 }}>
+                                        <div style={{ width: 18, height: `${Math.max(cashH, 1)}%`, background: 'linear-gradient(to top,#1B9684,#2dd4bf)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: cashH > 5 ? '0 0 12px rgba(45,212,191,0.2)' : 'none' }} title={t('dashboard.cashTitle', { amount: d.cash })} />
+                                        <div style={{ width: 18, height: `${Math.max(tpeH, 1)}%`, background: 'linear-gradient(to top,#7C3360,#c026d3)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: tpeH > 5 ? '0 0 12px rgba(192,38,211,0.2)' : 'none' }} title={t('dashboard.tpeTitle', { amount: d.tpe })} />
                                     </div>
-                                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
                                         {new Date(d.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                                     </div>
                                 </div>
@@ -117,15 +151,15 @@ export default function DashboardPage() {
                         })}
                     </div>
                 )}
-                <div style={{ display: 'flex', gap: 16, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, background: '#22c55e' }} /> Espèces
+                <div style={{ display: 'flex', gap: 20, marginTop: 12, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#fff', fontWeight: 500 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: 3, background: 'linear-gradient(to top,#1B9684,#2dd4bf)' }} /> {t('dashboard.cashLegend')}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-                        <div style={{ width: 10, height: 10, borderRadius: 2, background: '#818cf8' }} /> TPE
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', color: '#fff', fontWeight: 500 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: 3, background: 'linear-gradient(to top,#7C3360,#c026d3)' }} /> {t('dashboard.tpeLegend')}
                     </div>
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 }
