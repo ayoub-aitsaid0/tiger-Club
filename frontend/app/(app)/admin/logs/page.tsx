@@ -76,9 +76,9 @@ export default function AuditLogsPage() {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
             style={{ padding: '32px 32px 100px', display: 'flex', flexDirection: 'column', gap: 32, overflow: 'auto', height: '100%' }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>

@@ -145,9 +145,11 @@ input:focus, select:focus, textarea:focus {
 /* Responsive Visibility */
 .desktop-only { display: flex; }
 .mobile-only { display: none; }
+.plan-mobile-shelf { display: none; }
 @media (max-width: 820px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: flex !important; }
+  .plan-mobile-shelf { display: block !important; }
 }
 
 /* Keyframes */
@@ -163,4 +165,8 @@ input:focus, select:focus, textarea:focus {
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+@keyframes shelf-slide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

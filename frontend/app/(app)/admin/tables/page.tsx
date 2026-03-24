@@ -207,7 +207,7 @@ export default function AdminTablesPage() {
         <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.25 }}
             style={{
                 height: '100vh', display: 'flex', flexDirection: 'column',
                 overflow: 'hidden', background: 'var(--bg-primary)'

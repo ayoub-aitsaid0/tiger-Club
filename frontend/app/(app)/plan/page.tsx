@@ -5,16 +5,16 @@ import api from '@/lib/api';
 import { useAppStore, TableStatus } from '@/lib/store';
 import ReservationModal from '@/components/ReservationModal';
 import toast from 'react-hot-toast';
-import { Link2, Link2Off, RefreshCw, Calendar, X } from 'lucide-react';
+import { Link2, Link2Off, RefreshCw, Calendar, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const FloorMap = dynamic(() => import('@/components/FloorMap'), { ssr: false });
 
 const getLegend = (t: any) => [
-    { label: t('plan.legend.free'), color: '#5ea488', shape: 'circle' },
-    { label: t('plan.legend.reserved'), color: '#E83838', shape: 'circle' },
-    { label: t('plan.legend.occupied'), color: '#ed610c', shape: 'circle' },
-    { label: t('plan.legend.vip'), color: '#a63a96', shape: 'circle' },
+    { label: t('plan.legend.free'), color: '#F37950' },
+    { label: t('plan.legend.reserved'), color: '#1B9684' },
+    { label: t('plan.legend.occupied'), color: '#D89718' },
+    { label: t('plan.legend.vip'), color: '#7C3360' },
 ];
 
 export default function PlanPage() {
@@ -28,6 +28,7 @@ export default function PlanPage() {
     } = useAppStore();
     const [loading, setLoading] = useState(false);
     const [modalTables, setModalTables] = useState<TableStatus[] | null>(null);
+    const [controlsOpen, setControlsOpen] = useState(false);
 
     const fetchStatuses = useCallback(async () => {
         setLoading(true);
@@ -64,6 +65,72 @@ export default function PlanPage() {
         setModalTables(selected);
     };
 
+    const controlBarContent = (
+        <>
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                background: 'rgba(246,188,89,0.06)',
+                border: '1px solid rgba(246,188,89,0.15)',
+                borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
+            }}>
+                <Calendar size={13} color="#F6BC59" />
+                <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e: { target: { value: string } }) => setSelectedDate(e.target.value)}
+                    style={{
+                        background: 'transparent', border: 'none',
+                        color: '#F0E4C0', fontSize: '0.8rem', outline: 'none',
+                        cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                />
+            </div>
+
+            <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
+
+            <button onClick={toggleLinkMode} style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 8, border: '1px solid',
+                cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
+                fontFamily: 'inherit',
+                background: linkMode ? 'rgba(246,188,89,0.12)' : 'transparent',
+                borderColor: linkMode ? '#F6BC59' : 'rgba(246,188,89,0.15)',
+                color: linkMode ? '#F6BC59' : '#C8B880',
+                transition: 'all 0.18s', whiteSpace: 'nowrap',
+            }}>
+                {linkMode ? <Link2 size={13} /> : <Link2Off size={13} />}
+                {linkMode ? t('plan.linkMode.on') : t('plan.linkMode.off')}
+            </button>
+
+            <button onClick={fetchStatuses} disabled={loading} style={{
+                width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'transparent', border: '1px solid rgba(246,188,89,0.15)',
+                borderRadius: 8, cursor: 'pointer', color: '#C8B880', flexShrink: 0,
+                transition: 'border-color 0.2s',
+            }}>
+                <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            </button>
+
+            <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
+
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                {LEGEND.map(({ label, color }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <div style={{
+                            width: 7, height: 7, borderRadius: '50%',
+                            background: color, flexShrink: 0,
+                            boxShadow: `0 0 6px ${color}55`,
+                        }} />
+                        <span style={{
+                            fontSize: '0.68rem', color: '#8888A0',
+                            whiteSpace: 'nowrap', fontWeight: 500,
+                        }}>{label}</span>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+
     return (
         <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden', background: '#060608' }}>
 
@@ -82,87 +149,59 @@ export default function PlanPage() {
                 )}
             </div>
 
-            {/* ── OVERLAY CONTROL BAR (top) ───────────────────────── */}
-            <div style={{
+            {/* ── DESKTOP: Static overlay control bar ──────────────── */}
+            <div className="desktop-only" style={{
                 position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
                 display: 'flex', alignItems: 'center', gap: 10,
                 background: 'rgba(10,8,14,0.88)',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
                 border: '1px solid rgba(246,188,89,0.18)',
-                borderRadius: 14,
-                padding: '8px 16px',
+                borderRadius: 14, padding: '8px 16px',
                 zIndex: 20,
-                boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 1px rgba(246,188,89,0.15)',
-                flexWrap: 'wrap',
-                maxWidth: 'calc(100vw - 40px)',
+                boxShadow: '0 6px 28px rgba(0,0,0,0.6)',
+                flexWrap: 'wrap', maxWidth: 'calc(100vw - 40px)',
                 fontFamily: "'Outfit', sans-serif",
             }}>
-                {/* Date picker */}
-                <div style={{
-                    display: 'flex', alignItems: 'center', gap: 7,
-                    background: 'rgba(246,188,89,0.06)',
-                    border: '1px solid rgba(246,188,89,0.15)',
-                    borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-                }}>
-                    <Calendar size={13} color="#F6BC59" />
-                    <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e: { target: { value: string } }) => setSelectedDate(e.target.value)}
-                        style={{
-                            background: 'transparent', border: 'none',
-                            color: '#F0E4C0', fontSize: '0.8rem', outline: 'none',
-                            cursor: 'pointer', fontFamily: 'inherit',
-                        }}
-                    />
-                </div>
+                {controlBarContent}
+            </div>
 
-                <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
-
-                {/* Link-mode toggle */}
-                <button onClick={toggleLinkMode} style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '6px 12px', borderRadius: 8, border: '1px solid',
-                    cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600,
-                    fontFamily: 'inherit',
-                    background: linkMode ? 'rgba(246,188,89,0.12)' : 'transparent',
-                    borderColor: linkMode ? '#F6BC59' : 'rgba(246,188,89,0.15)',
-                    color: linkMode ? '#F6BC59' : '#C8B880',
-                    transition: 'all 0.18s', whiteSpace: 'nowrap',
-                }}>
-                    {linkMode ? <Link2 size={13} /> : <Link2Off size={13} />}
-                    {linkMode ? t('plan.linkMode.on') : t('plan.linkMode.off')}
+            {/* ── MOBILE: Pull-shelf drawer (top) ─────────────────── */}
+            <div className="plan-mobile-shelf" style={{
+                position: 'absolute', top: 0, left: 0, right: 0,
+                zIndex: 20,
+            }}>
+                {/* Pull tab — always visible at top center */}
+                <button
+                    onClick={() => setControlsOpen(!controlsOpen)}
+                    style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto',
+                        width: 56, height: 28,
+                        background: 'rgba(10,8,14,0.94)',
+                        border: '1px solid rgba(246,188,89,0.25)',
+                        borderTop: 'none',
+                        borderRadius: '0 0 12px 12px',
+                        color: '#F6BC59', cursor: 'pointer',
+                    }}
+                >
+                    {controlsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
 
-                {/* Refresh */}
-                <button onClick={fetchStatuses} disabled={loading} style={{
-                    width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'transparent', border: '1px solid rgba(246,188,89,0.15)',
-                    borderRadius: 8, cursor: 'pointer', color: '#C8B880', flexShrink: 0,
-                    transition: 'border-color 0.2s',
-                }}>
-                    <RefreshCw size={13} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-                </button>
-
-                <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
-
-                {/* Legend */}
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                    {LEGEND.map(({ label, color }) => (
-                        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <div style={{
-                                width: 7, height: 7, borderRadius: '50%',
-                                background: color, flexShrink: 0,
-                                boxShadow: `0 0 6px ${color}55`,
-                            }} />
-                            <span style={{
-                                fontSize: '0.68rem', color: '#8888A0',
-                                whiteSpace: 'nowrap', fontWeight: 500,
-                            }}>{label}</span>
-                        </div>
-                    ))}
-                </div>
+                {/* Controls panel — slides down when open */}
+                {controlsOpen && (
+                    <div style={{
+                        position: 'absolute', top: 28, left: 0, right: 0,
+                        background: 'rgba(10,8,14,0.94)',
+                        borderBottom: '1px solid rgba(246,188,89,0.18)',
+                        borderRadius: '0 0 16px 16px',
+                        padding: '12px 16px',
+                        display: 'flex', flexWrap: 'wrap', gap: 10,
+                        alignItems: 'center',
+                        fontFamily: "'Outfit', sans-serif",
+                        animation: 'shelf-slide 0.2s ease-out',
+                    }}>
+                        {controlBarContent}
+                    </div>
+                )}
             </div>
 
             {/* ── Floating link-mode action bar (bottom) ──────────── */}
@@ -171,14 +210,12 @@ export default function PlanPage() {
                     position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)',
                     display: 'flex', gap: 12, alignItems: 'center',
                     background: 'rgba(10,8,14,0.94)',
-                    backdropFilter: 'blur(14px)',
                     border: '1px solid rgba(246,188,89,0.35)',
                     borderRadius: 14, padding: '12px 20px',
                     zIndex: 30,
-                    boxShadow: '0 10px 36px rgba(0,0,0,0.7), 0 0 20px rgba(246,188,89,0.10)',
+                    boxShadow: '0 10px 36px rgba(0,0,0,0.7)',
                     whiteSpace: 'nowrap',
                     fontFamily: "'Outfit', sans-serif",
-                    animation: 'fade-in 0.25s ease-out',
                 }}>
                     <div style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -36,9 +36,9 @@ export default function DashboardPage() {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
             style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: 32, overflow: 'auto', height: '100%', WebkitOverflowScrolling: 'touch' }}
         >
 
@@ -60,9 +60,9 @@ export default function DashboardPage() {
                         <motion.div 
                             key={label} 
                             className="glass-panel"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.2, delay: delay * 0.5 }}
                             style={{ padding: '32px', position: 'relative', overflow: 'hidden' }}
                         >
                             <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, background: `radial-gradient(circle, ${color}20 0%, transparent 60%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
@@ -87,9 +87,9 @@ export default function DashboardPage() {
             {/* Chart Container */}
             <motion.div 
                 className="glass-panel" 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2, delay: 0.15 }}
                 style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column' }}
             >
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>

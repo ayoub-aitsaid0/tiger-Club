@@ -16,20 +16,20 @@ const MAX_SCALE = 3.0;
 
 /* ═══════════════════════════════════════════════════════════════════════════
    COLOUR SYSTEM
-   Cleaner 3-stop gradients per zone. Dark-on-light for Orange/White,
-   light-on-dark for Teal/Purple/Grey. Reserved & occupied are distinct.
+   Orange = Libre, Grey = Stage area, Red = Piste area,
+   Green = Réservé, Purple = VIP.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const FREE_STOPS: Record<string, (number | string)[]> = {
-    Orange: [0, '#FFA880', 0.45, '#F37950', 1, '#C84820'], // Exact requested F37950
-    Teal:   [0, '#50DFC8', 0.45, '#1B9684', 1, '#0F6B5C'], // Exact requested 1B9684
-    Grey:   [0, '#B8B8C4', 0.45, '#7A7A8A', 1, '#484858'],
-    Purple: [0, '#B0588A', 0.45, '#7C3360', 1, '#4A1A35'], // Exact requested 7C3360
-    White:  [0, '#FFF0D0', 0.45, '#F6BC59', 1, '#C08820'], // Exact requested F6BC59 for stools
+    Orange: [0, '#FFA880', 0.45, '#F37950', 1, '#C84820'],
+    Teal:   [0, '#FF7878', 0.45, '#E83838', 1, '#A01818'], // Piste tables → Red
+    Grey:   [0, '#B8B8C4', 0.45, '#7A7A8A', 1, '#484858'], // Stage tables → Grey restored
+    Purple: [0, '#B0588A', 0.45, '#7C3360', 1, '#4A1A35'], // VIP purple
+    White:  [0, '#FFF0D0', 0.45, '#F6BC59', 1, '#C08820'], // Stools
 };
 
-const RESERVED_STOPS: (number | string)[] = [0, '#FF7878', 0.45, '#E83838', 1, '#A01818'];
-const OCCUPIED_STOPS: (number | string)[] = [0, '#FFD060', 0.45, '#D89718', 1, '#986808'];
+const RESERVED_STOPS: (number | string)[] = [0, '#50DFC8', 0.45, '#1B9684', 1, '#0F6B5C']; // Green
+const OCCUPIED_STOPS: (number | string)[] = [0, '#FFD060', 0.45, '#D89718', 1, '#986808']; // Warm amber
 const LINKED_STOPS:   (number | string)[] = [0, '#FFE4A0', 0.45, '#F6BC59', 1, '#C08820'];
 
 function getStops(status: string, zone: string, linked: boolean): (number | string)[] {
@@ -39,37 +39,37 @@ function getStops(status: string, zone: string, linked: boolean): (number | stri
     return FREE_STOPS[zone] ?? FREE_STOPS.Orange;
 }
 
-/* Stroke colour — zone-aware for free, semantic for states */
+/* Stroke colour */
 function getStroke(status: string, zone: string, linked: boolean, hovered: boolean): string {
     if (linked)  return '#FFD685';
     if (hovered) return '#FFFFFF';
-    if (status === 'reserved') return '#FF5050';
+    if (status === 'reserved') return '#50DFC8'; // Green stroke for reserved
     if (status === 'occupied') return '#FFB838';
     const map: Record<string, string> = {
-        Orange: '#F6BC59', Teal: '#50DFC8',
+        Orange: '#F6BC59', Teal: '#FF5050',
         Grey: '#9898A8', Purple: '#B0588A', White: '#F6BC59',
     };
     return map[zone] ?? '#F6BC59';
 }
 
-/* Text colour — ensure contrast on each background */
+/* Text colour — ensure contrast */
 function getTextFill(status: string, zone: string): string {
-    if (status === 'reserved') return '#FFFFFF';
+    if (status === 'reserved') return '#FFFFFF'; // White text on green
     if (status === 'occupied') return '#1A0800';
-    if (zone === 'Purple' || zone === 'Teal') return '#FFFFFF';
+    if (zone === 'Purple' || zone === 'Teal' || zone === 'Grey') return '#FFFFFF';
     return '#1A0A00';
 }
 
-/* Status emoji for hover tooltip */
+/* Status tooltip */
 function getStatusLabel(status: string): string {
     if (status === 'reserved') return '● Réservée';
     if (status === 'occupied') return '● Occupée';
     return '● Libre';
 }
 function getStatusColor(status: string): string {
-    if (status === 'reserved') return '#FF5050';
+    if (status === 'reserved') return '#1B9684'; // Green
     if (status === 'occupied') return '#FFB838';
-    return '#50D880';
+    return '#F37950'; // Orange for free
 }
 
 export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
@@ -282,7 +282,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                     <Text x={0} y={20} width={CANVAS_W} text="DJ"
                         fontSize={58} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="'Montserrat', sans-serif" letterSpacing={30}
-                        shadowColor="rgba(246,188,89,0.7)" shadowBlur={30} />
+                        shadowColor="rgba(246,188,89,0.5)" shadowBlur={12} />
 
                     {/* ── Stage horizontal ────────────────────────────────── */}
                     <Rect x={150} y={260} width={780} height={100}
@@ -293,7 +293,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                     <Text x={150} y={288} width={780} text="STAGE"
                         fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={14}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={20} />
+                        shadowColor="rgba(246,188,89,0.7)" shadowBlur={10} />
 
                     {/* ── Stage vertical ──────────────────────────────────── */}
                     <Rect x={460} y={380} width={160} height={340}
@@ -327,7 +327,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                         fillLinearGradientEndPoint={{ x: 65, y: 65 }}
                         fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
                         stroke="#F6BC59" strokeWidth={4}
-                        shadowColor="rgba(246,188,89,0.5)" shadowBlur={32} />
+                        shadowColor="rgba(246,188,89,0.4)" shadowBlur={14} />
                     <Circle x={540} y={970} radius={56}
                         fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
                     <Text x={474} y={956} width={131} text="TIGER"
@@ -408,7 +408,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                                     stroke={strokeColor} strokeWidth={strokeW}
                                     cornerRadius={radius}
                                     shadowColor={glowColor}
-                                    shadowBlur={isLinked || isHovered ? 14 : (table.status !== 'free' ? 8 : 0)} />
+                                    shadowBlur={isLinked || isHovered ? 8 : (table.status !== 'free' ? 4 : 0)} />
 
                                 {/* Inner top highlight — 1px light line for depth */}
                                 {!isSmall && (
@@ -454,7 +454,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                 </Layer>
             </Stage>
 
-            {/* ── Zoom controls (bottom-right) ─────────────────────────── */}
+            {/* ── Zoom controls (bottom-right) ──────────────────────── */}
             <div style={{
                 position: 'absolute', bottom: 18, right: 18,
                 display: 'flex', flexDirection: 'column', gap: 5,

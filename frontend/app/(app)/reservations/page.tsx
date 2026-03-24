@@ -83,9 +83,9 @@ export default function ReservationsPage() {
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
             style={{ padding: '32px 32px 100px', display: 'flex', flexDirection: 'column', gap: 32, height: '100%', overflow: 'auto' }}
         >
             {/* Header & Filters */}
@@ -126,9 +126,9 @@ export default function ReservationsPage() {
                     { label: t('reservations.stats.revenue'), value: filtered.reduce((s, r) => s + r.total_price, 0).toLocaleString('fr-FR') + ' DH', color: 'var(--green)', bg: 'rgba(34,197,94,0.05)' },
                 ].map(({ label, value, color, bg }, idx) => (
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4, delay: 0.1 + (idx * 0.1) }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2, delay: idx * 0.05 }}
                         key={label} 
                         className="glass-panel" 
                         style={{ padding: '20px 24px', border: `1px solid ${color}30`, position: 'relative', overflow: 'hidden' }}
@@ -151,9 +151,9 @@ export default function ReservationsPage() {
                     const canEdit = user?.role === 'admin' || r.created_by_user_id === user?.id;
                     return (
                         <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: 0.2 + (idx * 0.05) }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.15, delay: Math.min(idx * 0.03, 0.3) }}
                             key={r.id} 
                             className="glass-panel"
                             style={{
@@ -204,9 +204,9 @@ export default function ReservationsPage() {
             {/* ── Desktop Layout (Table) ── */}
             <motion.div 
                 className="desktop-only glass-panel" 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
                 style={{ flex: 1, overflow: 'hidden' }}
             >
                 <div style={{ overflowX: 'auto', height: '100%' }}>

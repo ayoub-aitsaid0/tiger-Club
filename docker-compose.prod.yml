@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./backend
+    restart: always
+    ports:
+      - "8000:5000"
+    environment:
+      - DATABASE_URL=postgresql://tiger:club_secret_prod_123@db:5432/tigerclub
+      - SECRET_KEY=prod_super_secret_tiger_club_key_2026_xyz
+      - ALLOWED_ORIGINS=https://tiger-club.vercel.app,http://localhost:3001
+    depends_on:
+      - db
+    volumes:
+      - /var/www/tiger-club/backend/data:/app/data
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: tiger
+      POSTGRES_PASSWORD: club_secret_prod_123
+      POSTGRES_DB: tigerclub
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+
+volumes:
+  postgres_data_prod:
