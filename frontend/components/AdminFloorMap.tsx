@@ -27,6 +27,7 @@ interface AdminFloorMapProps {
     onTableMove: (id: number, x: number, y: number) => void;
     onTableSelect: (table: AdminTable | null) => void;
     onPlaceTable: (x: number, y: number) => void;
+    onUserInteract?: () => void;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -52,11 +53,13 @@ const GHOST_FILL: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function AdminFloorMap({
     tables, selectedTableId, placementMode, newTableDraft,
-    onTableMove, onTableSelect, onPlaceTable,
+    onTableMove, onTableSelect, onPlaceTable, onUserInteract,
 }: AdminFloorMapProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(1);
     const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(null);
+    const [viewport, setViewport] = useState({ w: 0, h: 0 });
+    const hasResizeObserver = typeof window !== 'undefined' && 'ResizeObserver' in window;
 
     // ── Responsive scaling ────────────────────────────────────────────────────
     useEffect(() => {
@@ -65,14 +68,21 @@ export default function AdminFloorMap({
             const w = containerRef.current.clientWidth;
             const h = containerRef.current.clientHeight;
             if (!w || !h) return;
+            setViewport({ w, h });
             setScale(Math.max(0.1, Math.min(w / CANVAS_W, h / CANVAS_H)));
         };
         update();
-        const ro = new ResizeObserver(update);
-        if (containerRef.current) ro.observe(containerRef.current);
+        let ro: ResizeObserver | null = null;
+        if (hasResizeObserver) {
+            ro = new ResizeObserver(update);
+            if (containerRef.current) ro.observe(containerRef.current);
+        }
         window.addEventListener('resize', update);
-        return () => { ro.disconnect(); window.removeEventListener('resize', update); };
-    }, []);
+        return () => {
+            if (ro) ro.disconnect();
+            window.removeEventListener('resize', update);
+        };
+    }, [hasResizeObserver]);
 
     // ── Stage mouse events ────────────────────────────────────────────────────
     const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
@@ -98,6 +108,7 @@ export default function AdminFloorMap({
 
     const stageW = CANVAS_W * scale;
     const stageH = CANVAS_H * scale;
+    const lowPowerMode = viewport.w <= 1024 || viewport.h <= 900 || !hasResizeObserver;
 
     return (
         <div
@@ -114,6 +125,8 @@ export default function AdminFloorMap({
                 scaleX={scale} scaleY={scale}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => setGhostPos(null)}
+                onMouseDown={onUserInteract}
+                onTouchStart={onUserInteract}
                 onClick={handleStageClick}
                 style={{ display: 'block' }}
             >
@@ -127,17 +140,17 @@ export default function AdminFloorMap({
                     />
 
                     {/* Subtle snap grid */}
-                    {Array.from({ length: Math.ceil(CANVAS_W / 50) }, (_, i) => (
+                    {!lowPowerMode && Array.from({ length: Math.ceil(CANVAS_W / 50) }, (_, i) => (
                         <Rect key={`vg${i}`} x={(i + 1) * 50} y={0} width={1} height={CANVAS_H}
                             fill="rgba(0,0,0,0.05)" />
                     ))}
-                    {Array.from({ length: Math.ceil(CANVAS_H / 50) }, (_, i) => (
+                    {!lowPowerMode && Array.from({ length: Math.ceil(CANVAS_H / 50) }, (_, i) => (
                         <Rect key={`hg${i}`} x={0} y={(i + 1) * 50} width={CANVAS_W} height={1}
                             fill="rgba(0,0,0,0.05)" />
                     ))}
 
                     {/* Marble veins */}
-                    {[120, 340, 580, 780].map((xv, i) => (
+                    {!lowPowerMode && [120, 340, 580, 780].map((xv, i) => (
                         <Rect key={`mv${i}`} x={xv} y={0} width={1} height={CANVAS_H}
                             fill="rgba(180,170,150,0.15)" />
                     ))}
@@ -162,7 +175,7 @@ export default function AdminFloorMap({
                     <Text x={0} y={18} width={CANVAS_W} text="DJ"
                         fontSize={60} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={25}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={25} />
+                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={lowPowerMode ? 10 : 25} />
 
                     {/* ── Stage horizontal ────────────────────────────────── */}
                     <Rect x={150} y={260} width={780} height={100}
@@ -173,7 +186,7 @@ export default function AdminFloorMap({
                     <Text x={150} y={288} width={780} text="STAGE"
                         fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={14}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={20} />
+                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={lowPowerMode ? 8 : 20} />
 
                     {/* ── Stage vertical ──────────────────────────────────── */}
                     <Rect x={460} y={380} width={160} height={340}
@@ -207,7 +220,7 @@ export default function AdminFloorMap({
                         fillLinearGradientEndPoint={{ x: 65, y: 65 }}
                         fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
                         stroke="#F6BC59" strokeWidth={4}
-                        shadowColor="rgba(246,188,89,0.5)" shadowBlur={32} />
+                        shadowColor="rgba(246,188,89,0.5)" shadowBlur={lowPowerMode ? 10 : 32} />
                     <Circle x={540} y={970} radius={56}
                         fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
                     <Text x={474} y={956} width={131} text="TIGER"
@@ -244,6 +257,7 @@ export default function AdminFloorMap({
                                     e.target.position({ x: nx, y: ny }); // snap visually
                                     onTableMove(table.id, nx, ny);
                                 }}
+                                onDragStart={onUserInteract}
                                 onClick={(e) => {
                                     e.cancelBubble = true;
                                     if (!placementMode) onTableSelect(table);
@@ -278,11 +292,12 @@ export default function AdminFloorMap({
                                     strokeWidth={isSelected ? 1.5 : 0.8}
                                     cornerRadius={isSmall ? 4 : 9}
                                     shadowColor={isSelected ? 'rgba(249,115,22,0.6)' : 'transparent'}
-                                    shadowBlur={isSelected ? 16 : 0}
+                                    shadowBlur={lowPowerMode ? 0 : (isSelected ? 16 : 0)}
+                                    perfectDrawEnabled={!lowPowerMode}
                                 />
 
                                 {/* Gloss strip */}
-                                {!isSmall && (
+                                {!isSmall && !lowPowerMode && (
                                     <Rect x={3} y={2} width={w - 6} height={Math.min(h * 0.28, 14)}
                                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                                         fillLinearGradientEndPoint={{ x: 0, y: 14 }}
@@ -291,7 +306,7 @@ export default function AdminFloorMap({
                                 )}
 
                                 {/* Divider lines */}
-                                {!isSmall && Array.from({ length: Math.max(0, Math.floor(h / 18) - 1) }, (_, i) => (
+                                {!isSmall && !lowPowerMode && Array.from({ length: Math.max(0, Math.floor(h / 18) - 1) }, (_, i) => (
                                     <Rect key={i}
                                         x={3} y={((i + 1) / (Math.floor(h / 18))) * h}
                                         width={w - 6} height={1}
@@ -331,7 +346,7 @@ export default function AdminFloorMap({
                                 stroke="#fbbf24" strokeWidth={2}
                                 cornerRadius={newTableDraft.h <= 20 ? 3 : 8}
                                 dash={[5, 3]}
-                                shadowColor="#fbbf24" shadowBlur={14}
+                                shadowColor="#fbbf24" shadowBlur={lowPowerMode ? 4 : 14}
                             />
                             <Text
                                 width={newTableDraft.w} height={newTableDraft.h}
