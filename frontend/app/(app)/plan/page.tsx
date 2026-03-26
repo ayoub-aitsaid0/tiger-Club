@@ -349,6 +349,7 @@ export default function PlanPage() {
                 <ShiftModal
                     onConfirmed={(name) => {
                         setOperatorName(name);
+                        setDateOperatorName(name);
                         setShowShiftModal(false);
                     }}
                 />

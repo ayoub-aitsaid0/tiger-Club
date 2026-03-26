@@ -53,7 +53,7 @@ def create_reservation():
                 "error": f"Table(s) {list(overlap)} déjà réservée(s) pour cette date"
             }), 409
 
-    today_shift = DailyShift.query.filter_by(date=res_date).first()
+    today_shift = DailyShift.query.filter_by(date=date.today()).first()
 
     reservation = Reservation(
         table_ids=table_ids,
