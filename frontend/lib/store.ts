@@ -23,6 +23,7 @@ interface AppState {
     tableStatuses: TableStatus[];
     linkedTables: number[];   // table ids selected in link mode
     linkMode: boolean;
+    operatorName: string | null;  // daily shift operator
 
     setUser: (user: AppUser | null) => void;
     setToken: (token: string | null) => void;
@@ -32,18 +33,29 @@ interface AppState {
     addLinkedTable: (id: number) => void;
     removeLinkedTable: (id: number) => void;
     clearLinkedTables: () => void;
+    setOperatorName: (name: string | null) => void;
     logout: () => void;
 }
 
-const today = () => new Date().toISOString().split('T')[0];
+// Returns the "service date" — the shift period runs from 18:30 on day N to 18:29 on day N+1.
+// Before 18:30 we're still in yesterday's service period.
+function serviceDate(): string {
+    const now = new Date();
+    const d = new Date(now);
+    if (now.getHours() < 18 || (now.getHours() === 18 && now.getMinutes() < 30)) {
+        d.setDate(d.getDate() - 1);
+    }
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 export const useAppStore = create<AppState>((set, get) => ({
     user: null,
     token: null,
-    selectedDate: today(),
+    selectedDate: serviceDate(),
     tableStatuses: [],
     linkedTables: [],
     linkMode: false,
+    operatorName: null,
 
     setUser: (user) => set({ user }),
     setToken: (token) => set({ token }),
@@ -53,6 +65,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     addLinkedTable: (id) => set((s) => ({ linkedTables: [...s.linkedTables, id] })),
     removeLinkedTable: (id) => set((s) => ({ linkedTables: s.linkedTables.filter((t) => t !== id) })),
     clearLinkedTables: () => set({ linkedTables: [] }),
+    setOperatorName: (name) => set({ operatorName: name }),
     logout: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('token');

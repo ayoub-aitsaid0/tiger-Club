@@ -25,6 +25,7 @@ def create_app():
     from app.routes.users import users_bp
     from app.routes.analytics import analytics_bp
     from app.routes.audit import audit_bp
+    from app.routes.shifts import shifts_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(tables_bp, url_prefix="/api/tables")
@@ -32,5 +33,6 @@ def create_app():
     app.register_blueprint(users_bp, url_prefix="/api/users")
     app.register_blueprint(analytics_bp, url_prefix="/api/analytics")
     app.register_blueprint(audit_bp, url_prefix="/api/audit")
+    app.register_blueprint(shifts_bp, url_prefix="/api/shifts")
 
     return app

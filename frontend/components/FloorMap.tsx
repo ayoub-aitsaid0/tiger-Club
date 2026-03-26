@@ -9,7 +9,8 @@ interface FloorMapProps {
     onTableClick: (table: TableStatus) => void;
 }
 
-const CANVAS_W = 1080;
+const LEFT_EXT = 220; // empty zone added to the left for future tables
+const CANVAS_W = 1080 + LEFT_EXT; // 1300
 const CANVAS_H = 1920;
 const MIN_SCALE = 0.15;
 const MAX_SCALE = 3.0;
@@ -238,8 +239,8 @@ const StaticMapLayer = memo(function StaticMapLayer() {
 
             {/* 2 · Warm centre glow (PISTE area) */}
             <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                fillRadialGradientStartPoint={{ x: 551, y: 1029 }}
-                fillRadialGradientEndPoint={{ x: 551, y: 1029 }}
+                fillRadialGradientStartPoint={{ x: LEFT_EXT + 551, y: 1029 }}
+                fillRadialGradientEndPoint={{ x: LEFT_EXT + 551, y: 1029 }}
                 fillRadialGradientStartRadius={0}
                 fillRadialGradientEndRadius={650}
                 fillRadialGradientColorStops={[
@@ -252,8 +253,8 @@ const StaticMapLayer = memo(function StaticMapLayer() {
 
             {/* 3 · DJ spotlight from top */}
             <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                fillRadialGradientStartPoint={{ x: CANVAS_W / 2, y: 56 }}
-                fillRadialGradientEndPoint={{ x: CANVAS_W / 2, y: 56 }}
+                fillRadialGradientStartPoint={{ x: LEFT_EXT + 540, y: 56 }}
+                fillRadialGradientEndPoint={{ x: LEFT_EXT + 540, y: 56 }}
                 fillRadialGradientStartRadius={0}
                 fillRadialGradientEndRadius={500}
                 fillRadialGradientColorStops={[
@@ -265,8 +266,8 @@ const StaticMapLayer = memo(function StaticMapLayer() {
 
             {/* 4 · Vignette — darken edges */}
             <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                fillRadialGradientStartPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.42 }}
-                fillRadialGradientEndPoint={{ x: CANVAS_W / 2, y: CANVAS_H * 0.42 }}
+                fillRadialGradientStartPoint={{ x: LEFT_EXT + 540, y: CANVAS_H * 0.42 }}
+                fillRadialGradientEndPoint={{ x: LEFT_EXT + 540, y: CANVAS_H * 0.42 }}
                 fillRadialGradientStartRadius={350}
                 fillRadialGradientEndRadius={1050}
                 fillRadialGradientColorStops={[
@@ -291,75 +292,109 @@ const StaticMapLayer = memo(function StaticMapLayer() {
                 fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                 fillLinearGradientEndPoint={{ x: CANVAS_W, y: 0 }}
                 fillLinearGradientColorStops={[0, 'transparent', 0.12, '#F6BC59', 0.5, '#FFD685', 0.88, '#F6BC59', 1, 'transparent']} />
-            <Text x={0} y={20} width={CANVAS_W} text="DJ"
+            <Text x={LEFT_EXT} y={20} width={1080} text="DJ"
                 fontSize={58} fontStyle="bold" fill="#F6BC59" align="center"
                 fontFamily="'Montserrat', sans-serif" letterSpacing={30}
                 shadowColor="rgba(246,188,89,0.5)" shadowBlur={12} />
 
-            {/* ── Stage horizontal ────────────────────────────────── */}
-            <Rect x={150} y={260} width={780} height={100}
+            {/* ── Zone Libre (left area reserved for future tables) ── */}
+            <Rect x={1} y={113} width={LEFT_EXT - 2} height={CANVAS_H - 127}
+                fill="rgba(246,188,89,0.018)"
+                stroke="rgba(246,188,89,0.06)"
+                strokeWidth={1}
+                cornerRadius={3}
+            />
+            <Rect x={LEFT_EXT - 1} y={113} width={2} height={CANVAS_H - 127}
                 fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                fillLinearGradientEndPoint={{ x: 0, y: 100 }}
-                fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
-                stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
-            <Text x={150} y={288} width={780} text="STAGE"
-                fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
-                fontFamily="Georgia, serif" letterSpacing={14}
-                shadowColor="rgba(246,188,89,0.7)" shadowBlur={10} />
+                fillLinearGradientEndPoint={{ x: 0, y: CANVAS_H - 127 }}
+                fillLinearGradientColorStops={[0, 'transparent', 0.08, 'rgba(246,188,89,0.18)', 0.5, 'rgba(246,188,89,0.18)', 0.92, 'rgba(246,188,89,0.18)', 1, 'transparent']}
+            />
+            <Text
+                x={0} y={CANVAS_H / 2 - 70} width={LEFT_EXT}
+                text="ZONE LIBRE"
+                fontSize={18} fontStyle="bold"
+                fill="rgba(246,188,89,0.14)"
+                align="center"
+                fontFamily="'Montserrat', sans-serif"
+                letterSpacing={4}
+            />
+            <Text
+                x={0} y={CANVAS_H / 2 - 42}
+                width={LEFT_EXT}
+                text="espace disponible"
+                fontSize={11}
+                fill="rgba(246,188,89,0.09)"
+                align="center"
+                fontFamily="'Outfit', sans-serif"
+            />
 
-            {/* ── Stage vertical ──────────────────────────────────── */}
-            <Rect x={460} y={380} width={160} height={340}
-                fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                fillLinearGradientEndPoint={{ x: 160, y: 0 }}
-                fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
-                stroke="#F6BC59" strokeWidth={3} />
-            <Text x={555} y={485} width={131} text="STAGE"
-                fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
-                rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
-                shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+            {/* ── Content (Stage, Piste, Tiger, decorations) ────────── */}
+            <Group x={LEFT_EXT}>
+                {/* ── Stage horizontal ────────────────────────────────── */}
+                <Rect x={150} y={260} width={780} height={100}
+                    fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                    fillLinearGradientEndPoint={{ x: 0, y: 100 }}
+                    fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
+                    stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
+                <Text x={150} y={288} width={780} text="STAGE"
+                    fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
+                    fontFamily="Georgia, serif" letterSpacing={14}
+                    shadowColor="rgba(246,188,89,0.7)" shadowBlur={10} />
 
-            {/* ── Piste ───────────────────────────────────────────── */}
-            <Rect x={340} y={860} width={400} height={220}
-                fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                fillLinearGradientEndPoint={{ x: 0, y: 220 }}
-                fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
-                stroke="#F6BC59" strokeWidth={3} />
-            <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
-            <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
-            <Text x={406} y={915} width={100} text="PISTE"
-                fontSize={23} fontStyle="bold" fill="#F6BC59"
-                align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
-                shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-            <Text x={697} y={915} width={100} text="PISTE"
-                fontSize={23} fontStyle="bold" fill="#F6BC59"
-                align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
-                shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-            <Circle x={540} y={970} radius={65}
-                fillLinearGradientStartPoint={{ x: -65, y: -65 }}
-                fillLinearGradientEndPoint={{ x: 65, y: 65 }}
-                fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
-                stroke="#F6BC59" strokeWidth={4}
-                shadowColor="rgba(246,188,89,0.4)" shadowBlur={14} />
-            <Circle x={540} y={970} radius={56}
-                fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
-            <Text x={474} y={956} width={131} text="TIGER"
-                fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
-                fontFamily="'Montserrat', sans-serif" letterSpacing={6}
-                shadowColor="rgba(246,188,89,0.8)" shadowBlur={18} />
+                {/* ── Stage vertical ──────────────────────────────────── */}
+                <Rect x={460} y={380} width={160} height={340}
+                    fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                    fillLinearGradientEndPoint={{ x: 160, y: 0 }}
+                    fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
+                    stroke="#F6BC59" strokeWidth={3} />
+                <Text x={555} y={485} width={131} text="STAGE"
+                    fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
+                    rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
+                    shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
 
-            {/* ── Red accent dividers ───────────────────────────────── */}
-            <Rect x={171} y={740} width={45} height={3} fill="#dc2626" cornerRadius={2}
-                shadowColor="#dc2626" shadowBlur={6} />
-            <Rect x={887} y={1570} width={45} height={7} fill="#dc2626" cornerRadius={2}
-                shadowColor="#dc2626" shadowBlur={6} />
+                {/* ── Piste ───────────────────────────────────────────── */}
+                <Rect x={340} y={860} width={400} height={220}
+                    fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                    fillLinearGradientEndPoint={{ x: 0, y: 220 }}
+                    fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
+                    stroke="#F6BC59" strokeWidth={3} />
+                <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                <Text x={406} y={915} width={100} text="PISTE"
+                    fontSize={23} fontStyle="bold" fill="#F6BC59"
+                    align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
+                    shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+                <Text x={697} y={915} width={100} text="PISTE"
+                    fontSize={23} fontStyle="bold" fill="#F6BC59"
+                    align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
+                    shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+                <Circle x={540} y={970} radius={65}
+                    fillLinearGradientStartPoint={{ x: -65, y: -65 }}
+                    fillLinearGradientEndPoint={{ x: 65, y: 65 }}
+                    fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
+                    stroke="#F6BC59" strokeWidth={4}
+                    shadowColor="rgba(246,188,89,0.4)" shadowBlur={14} />
+                <Circle x={540} y={970} radius={56}
+                    fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
+                <Text x={474} y={956} width={131} text="TIGER"
+                    fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
+                    fontFamily="'Montserrat', sans-serif" letterSpacing={6}
+                    shadowColor="rgba(246,188,89,0.8)" shadowBlur={18} />
 
-            {/* ── Zone ground-plane cues ────────────────────────────── */}
-            <Rect x={20} y={1570} width={200} height={250}
-                fill="rgba(155,64,232,0.04)" stroke="rgba(155,64,232,0.08)"
-                strokeWidth={1} cornerRadius={12} />
-            <Rect x={210} y={600} width={730} height={860}
-                fill="rgba(29,184,128,0.025)" stroke="rgba(29,184,128,0.06)"
-                strokeWidth={1} cornerRadius={12} />
+                {/* ── Red accent dividers ───────────────────────────────── */}
+                <Rect x={171} y={740} width={45} height={3} fill="#dc2626" cornerRadius={2}
+                    shadowColor="#dc2626" shadowBlur={6} />
+                <Rect x={887} y={1570} width={45} height={7} fill="#dc2626" cornerRadius={2}
+                    shadowColor="#dc2626" shadowBlur={6} />
+
+                {/* ── Zone ground-plane cues ────────────────────────────── */}
+                <Rect x={20} y={1570} width={200} height={250}
+                    fill="rgba(155,64,232,0.04)" stroke="rgba(155,64,232,0.08)"
+                    strokeWidth={1} cornerRadius={12} />
+                <Rect x={210} y={600} width={730} height={860}
+                    fill="rgba(29,184,128,0.025)" stroke="rgba(29,184,128,0.06)"
+                    strokeWidth={1} cornerRadius={12} />
+            </Group>
         </Layer>
     );
 });
@@ -373,8 +408,8 @@ const LiteStaticMapLayer = memo(function LiteStaticMapLayer() {
                 fillLinearGradientColorStops={[0, '#121018', 0.55, '#0B0910', 1, '#0E0C14']}
             />
             <Rect x={0} y={0} width={CANVAS_W} height={CANVAS_H}
-                fillRadialGradientStartPoint={{ x: 551, y: 1029 }}
-                fillRadialGradientEndPoint={{ x: 551, y: 1029 }}
+                fillRadialGradientStartPoint={{ x: LEFT_EXT + 551, y: 1029 }}
+                fillRadialGradientEndPoint={{ x: LEFT_EXT + 551, y: 1029 }}
                 fillRadialGradientStartRadius={0}
                 fillRadialGradientEndRadius={560}
                 fillRadialGradientColorStops={[0, 'rgba(246,188,89,0.08)', 1, 'rgba(0,0,0,0)']}
@@ -387,26 +422,48 @@ const LiteStaticMapLayer = memo(function LiteStaticMapLayer() {
                 fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                 fillLinearGradientEndPoint={{ x: 0, y: 104 }}
                 fillLinearGradientColorStops={[0, '#1A1620', 1, '#0A080E']} />
-            <Text x={0} y={20} width={CANVAS_W} text="DJ"
+            <Text x={LEFT_EXT} y={20} width={1080} text="DJ"
                 fontSize={52} fontStyle="bold" fill="#F6BC59" align="center"
                 fontFamily="'Montserrat', sans-serif" letterSpacing={22} />
 
-            <Rect x={150} y={260} width={780} height={100}
-                fill="#141008" stroke="#F6BC59" strokeWidth={2.5} cornerRadius={5} />
-            <Text x={150} y={288} width={780} text="STAGE"
-                fontSize={36} fontStyle="bold" fill="#F6BC59" align="center"
-                fontFamily="Georgia, serif" letterSpacing={10} />
+            {/* ── Zone Libre ─────────────────────────────────────────── */}
+            <Rect x={1} y={105} width={LEFT_EXT - 2} height={CANVAS_H - 119}
+                fill="rgba(246,188,89,0.015)"
+                stroke="rgba(246,188,89,0.05)"
+                strokeWidth={1}
+            />
+            <Rect x={LEFT_EXT - 1} y={105} width={2} height={CANVAS_H - 119}
+                fill="rgba(246,188,89,0.15)"
+            />
+            <Text
+                x={0} y={CANVAS_H / 2 - 60} width={LEFT_EXT}
+                text="ZONE LIBRE"
+                fontSize={16} fontStyle="bold"
+                fill="rgba(246,188,89,0.12)"
+                align="center"
+                fontFamily="'Montserrat', sans-serif"
+                letterSpacing={3}
+            />
 
-            <Rect x={460} y={380} width={160} height={340}
-                fill="#141008" stroke="#F6BC59" strokeWidth={2.5} />
+            {/* ── Content Group ─────────────────────────────────────── */}
+            <Group x={LEFT_EXT}>
+                <Rect x={150} y={260} width={780} height={100}
+                    fill="#141008" stroke="#F6BC59" strokeWidth={2.5} cornerRadius={5} />
+                <Text x={150} y={288} width={780} text="STAGE"
+                    fontSize={36} fontStyle="bold" fill="#F6BC59" align="center"
+                    fontFamily="Georgia, serif" letterSpacing={10} />
 
-            <Rect x={340} y={860} width={400} height={220}
-                fill="#141008" stroke="#F6BC59" strokeWidth={2.5} />
-            <Circle x={540} y={970} radius={58}
-                fill="#1A140D" stroke="#F6BC59" strokeWidth={3} />
-            <Text x={474} y={956} width={131} text="TIGER"
-                fontSize={22} fontStyle="bold" fill="#F6BC59" align="center"
-                fontFamily="'Montserrat', sans-serif" letterSpacing={4} />
+                <Rect x={460} y={380} width={160} height={340}
+                    fill="#141008" stroke="#F6BC59" strokeWidth={2.5} />
+
+                <Rect x={340} y={860} width={400} height={220}
+                    fill="#141008" stroke="#F6BC59" strokeWidth={2.5} />
+                <Circle x={540} y={970} radius={58}
+                    fill="#1A140D" stroke="#F6BC59" strokeWidth={3} />
+                <Text x={474} y={956} width={131} text="TIGER"
+                    fontSize={22} fontStyle="bold" fill="#F6BC59" align="center"
+                    fontFamily="'Montserrat', sans-serif" letterSpacing={4} />
+            </Group>
         </Layer>
     );
 });
@@ -419,6 +476,8 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const lastDist = useRef(0);
+    const lastPinchMid = useRef({ x: 0, y: 0 });
+    const isPinching = useRef(false);
     const isDragging = useRef(false);
 
     const [viewport, setViewport] = useState({ w: 800, h: 600 });
@@ -509,26 +568,65 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
         zoomBy(factor, ptr.x, ptr.y);
     }, [zoomBy]);
 
+    const handleTouchStart = useCallback((e: KonvaEventObject<TouchEvent>) => {
+        if (e.evt.touches.length >= 2) {
+            isPinching.current = true;
+            // Stop any drag the stage started so it doesn't fight the pinch
+            const stage = e.target.getStage();
+            if (stage?.isDragging()) stage.stopDrag();
+            lastDist.current = 0;
+            lastPinchMid.current = { x: 0, y: 0 };
+        }
+    }, []);
+
     const handleTouchMove = useCallback((e: KonvaEventObject<TouchEvent>) => {
         const touches = e.evt.touches;
         if (touches.length !== 2) {
             lastDist.current = 0;
+            lastPinchMid.current = { x: 0, y: 0 };
             return;
         }
         e.evt.preventDefault();
+
+        // Stop stage drag whenever we're in a pinch
+        const stage = e.target.getStage();
+        if (stage?.isDragging()) stage.stopDrag();
+
         const t0 = touches[0], t1 = touches[1];
+        const rect = containerRef.current?.getBoundingClientRect();
+        const offX = rect?.left ?? 0;
+        const offY = rect?.top ?? 0;
+
         const dx = t0.clientX - t1.clientX, dy = t0.clientY - t1.clientY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const cx = (t0.clientX + t1.clientX) / 2;
-        const cy = (t0.clientY + t1.clientY) / 2;
+        // Pivot = midpoint, container-relative
+        const cx = (t0.clientX + t1.clientX) / 2 - offX;
+        const cy = (t0.clientY + t1.clientY) / 2 - offY;
+
         if (lastDist.current > 0) {
-            zoomBy(dist / lastDist.current, cx, cy);
+            const factor = dist / lastDist.current;
+            const midDx = lastPinchMid.current.x > 0 ? cx - lastPinchMid.current.x : 0;
+            const midDy = lastPinchMid.current.y > 0 ? cy - lastPinchMid.current.y : 0;
+            setTransform((current: { scale: number; x: number; y: number }) => {
+                const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, current.scale * factor));
+                const ratio = nextScale / current.scale;
+                // Zoom toward pinch midpoint, then pan by midpoint movement
+                const nx = cx - (cx - current.x) * ratio + midDx;
+                const ny = cy - (cy - current.y) * ratio + midDy;
+                const clamped = clampPos(nx, ny, nextScale, viewport.w, viewport.h);
+                return { scale: nextScale, x: clamped.x, y: clamped.y };
+            });
         }
         lastDist.current = dist;
-    }, [zoomBy]);
+        lastPinchMid.current = { x: cx, y: cy };
+    }, [clampPos, viewport.w, viewport.h]);
 
-    const handleTouchEnd = useCallback(() => {
+    const handleTouchEnd = useCallback((e: KonvaEventObject<TouchEvent>) => {
+        if (e.evt.touches.length < 2) {
+            isPinching.current = false;
+        }
         lastDist.current = 0;
+        lastPinchMid.current = { x: 0, y: 0 };
     }, []);
 
     const handleDragStart = useCallback(() => {
@@ -603,6 +701,7 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 onWheel={handleWheel}
+                onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 listening
@@ -610,19 +709,21 @@ export default function FloorMap({ tables, onTableClick }: FloorMapProps) {
             >
                 {lowPowerMode ? <LiteStaticMapLayer /> : <StaticMapLayer />}
                 <Layer>
-                    {tables.map((table) => (
-                        <TableNode
-                            key={table.id}
-                            table={table}
-                            isLinked={linkedSet.has(table.id)}
-                            isHovered={hoveredId === table.id}
-                            richEffects={richEffects}
-                            tooltipEnabled={tooltipEnabled}
-                            lowPowerMode={lowPowerMode}
-                            onHover={handleHover}
-                            onActivate={handleActivateTable}
-                        />
-                    ))}
+                    <Group x={LEFT_EXT}>
+                        {tables.map((table) => (
+                            <TableNode
+                                key={table.id}
+                                table={table}
+                                isLinked={linkedSet.has(table.id)}
+                                isHovered={hoveredId === table.id}
+                                richEffects={richEffects}
+                                tooltipEnabled={tooltipEnabled}
+                                lowPowerMode={lowPowerMode}
+                                onHover={handleHover}
+                                onActivate={handleActivateTable}
+                            />
+                        ))}
+                    </Group>
                 </Layer>
             </Stage>
 

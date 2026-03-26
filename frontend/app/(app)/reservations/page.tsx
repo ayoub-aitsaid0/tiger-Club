@@ -19,6 +19,7 @@ interface Reservation {
     date_reservation: string;
     status: string;
     notes: string;
+    operator_name: string | null;
     created_by_user_id: number;
     created_by_username: string;
     created_at: string;
@@ -168,6 +169,11 @@ export default function ReservationsPage() {
                                 <div style={{ flex: 1 }}>
                                     <div style={{ fontWeight: 700, fontSize: '1.15rem', color: '#fff', lineHeight: 1.2 }}>{r.customer_name}</div>
                                     <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 4 }}>{r.customer_phone || t('reservations.noPhone')} • {new Date(r.date_reservation + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</div>
+                                    {(r.operator_name || r.created_by_username) && (
+                                        <div style={{ fontSize: '0.75rem', marginTop: 3, color: r.operator_name ? '#c8a84b' : 'var(--text-muted)', fontWeight: r.operator_name ? 600 : 400 }}>
+                                            {r.operator_name ?? r.created_by_username}
+                                        </div>
+                                    )}
                                 </div>
                                 <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '4px 10px', borderRadius: 8, background: st.bg, color: st.color, border: `1px solid ${st.color}40`, boxShadow: `0 0 10px ${st.color}15`, textTransform: 'uppercase' }}>
                                     {st.label}
@@ -249,7 +255,12 @@ export default function ReservationsPage() {
                                         <td style={{ padding: '14px 16px' }}>
                                             <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '4px 8px', borderRadius: 6, background: st.bg, color: st.color, border: `1px solid ${st.color}30`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{st.label}</span>
                                         </td>
-                                        <td style={{ padding: '14px 16px', color: 'var(--text-muted)' }}>{r.created_by_username}</td>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            {r.operator_name
+                                                ? <span style={{ color: '#f5e6b8', fontWeight: 600 }}>{r.operator_name}</span>
+                                                : <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.8rem' }}>{r.created_by_username}</span>
+                                            }
+                                        </td>
                                         {(() => {
                                             const canEdit = user?.role === 'admin' || r.created_by_user_id === user?.id;
                                             return (

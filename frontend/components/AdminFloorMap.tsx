@@ -31,7 +31,8 @@ interface AdminFloorMapProps {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const CANVAS_W = 1080;
+const LEFT_EXT = 220; // empty zone added to the left for future tables
+const CANVAS_W = 1080 + LEFT_EXT; // 1300
 const CANVAS_H = 1920;
 const SNAP = 5;
 
@@ -89,6 +90,7 @@ export default function AdminFloorMap({
         if (!placementMode) return;
         const pos = e.target.getStage()?.getPointerPosition();
         if (!pos) return;
+        // pos is in screen pixels; divide by scale to get canvas (display) coords
         const cx = pos.x / scale;
         const cy = pos.y / scale;
         setGhostPos({
@@ -103,7 +105,8 @@ export default function AdminFloorMap({
             if (e.target === e.target.getStage()) onTableSelect(null);
             return;
         }
-        if (ghostPos) onPlaceTable(ghostPos.x, ghostPos.y);
+        // ghostPos.x is display coord; subtract LEFT_EXT to get stored coord
+        if (ghostPos) onPlaceTable(ghostPos.x - LEFT_EXT, ghostPos.y);
     };
 
     const stageW = CANVAS_W * scale;
@@ -150,7 +153,7 @@ export default function AdminFloorMap({
                     ))}
 
                     {/* Marble veins */}
-                    {!lowPowerMode && [120, 340, 580, 780].map((xv, i) => (
+                    {!lowPowerMode && [LEFT_EXT + 120, LEFT_EXT + 340, LEFT_EXT + 580, LEFT_EXT + 780].map((xv, i) => (
                         <Rect key={`mv${i}`} x={xv} y={0} width={1} height={CANVAS_H}
                             fill="rgba(180,170,150,0.15)" />
                     ))}
@@ -172,67 +175,101 @@ export default function AdminFloorMap({
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
                         fillLinearGradientEndPoint={{ x: CANVAS_W, y: 0 }}
                         fillLinearGradientColorStops={[0, 'transparent', 0.15, '#F6BC59', 0.85, '#F6BC59', 1, 'transparent']} />
-                    <Text x={0} y={18} width={CANVAS_W} text="DJ"
+                    <Text x={LEFT_EXT} y={18} width={1080} text="DJ"
                         fontSize={60} fontStyle="bold" fill="#F6BC59" align="center"
                         fontFamily="Georgia, serif" letterSpacing={25}
                         shadowColor="rgba(246,188,89,0.9)" shadowBlur={lowPowerMode ? 10 : 25} />
 
-                    {/* ── Stage horizontal ────────────────────────────────── */}
-                    <Rect x={150} y={260} width={780} height={100}
+                    {/* ── Zone Libre (left area reserved for future tables) ── */}
+                    <Rect x={1} y={113} width={LEFT_EXT - 2} height={CANVAS_H - 127}
+                        fill="rgba(246,188,89,0.07)"
+                        stroke="rgba(246,188,89,0.2)"
+                        strokeWidth={1}
+                        cornerRadius={3}
+                    />
+                    <Rect x={LEFT_EXT - 1} y={113} width={2} height={CANVAS_H - 127}
                         fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 100 }}
-                        fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
-                        stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
-                    <Text x={150} y={288} width={780} text="STAGE"
-                        fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
-                        fontFamily="Georgia, serif" letterSpacing={14}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={lowPowerMode ? 8 : 20} />
+                        fillLinearGradientEndPoint={{ x: 0, y: CANVAS_H - 127 }}
+                        fillLinearGradientColorStops={[0, 'transparent', 0.05, 'rgba(246,188,89,0.5)', 0.5, 'rgba(246,188,89,0.5)', 0.95, 'rgba(246,188,89,0.5)', 1, 'transparent']}
+                    />
+                    <Text
+                        x={0} y={CANVAS_H / 2 - 80} width={LEFT_EXT}
+                        text="ZONE LIBRE"
+                        fontSize={18} fontStyle="bold"
+                        fill="rgba(180,140,50,0.5)"
+                        align="center"
+                        fontFamily="'Montserrat', sans-serif"
+                        letterSpacing={4}
+                    />
+                    <Text
+                        x={0} y={CANVAS_H / 2 - 50}
+                        width={LEFT_EXT}
+                        text={"Espace disponible\npour nouvelles tables"}
+                        fontSize={11}
+                        fill="rgba(180,140,50,0.4)"
+                        align="center"
+                        fontFamily="'Outfit', sans-serif"
+                    />
 
-                    {/* ── Stage vertical ──────────────────────────────────── */}
-                    <Rect x={460} y={380} width={160} height={340}
-                        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 160, y: 0 }}
-                        fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
-                        stroke="#F6BC59" strokeWidth={3} />
-                    <Text x={555} y={485} width={131} text="STAGE"
-                        fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
-                        rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+                    {/* ── Existing floor decorations (Stage, Piste, Tiger) ─── */}
+                    <Group x={LEFT_EXT}>
+                        {/* ── Stage horizontal ────────────────────────────────── */}
+                        <Rect x={150} y={260} width={780} height={100}
+                            fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                            fillLinearGradientEndPoint={{ x: 0, y: 100 }}
+                            fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
+                            stroke="#F6BC59" strokeWidth={3} cornerRadius={5} />
+                        <Text x={150} y={288} width={780} text="STAGE"
+                            fontSize={40} fontStyle="bold" fill="#F6BC59" align="center"
+                            fontFamily="Georgia, serif" letterSpacing={14}
+                            shadowColor="rgba(246,188,89,0.9)" shadowBlur={lowPowerMode ? 8 : 20} />
 
-                    {/* ── Piste ───────────────────────────────────────────── */}
-                    <Rect x={340} y={860} width={400} height={220}
-                        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-                        fillLinearGradientEndPoint={{ x: 0, y: 220 }}
-                        fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
-                        stroke="#F6BC59" strokeWidth={3} />
-                    <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
-                    <Text x={406} y={915} width={100} text="PISTE"
-                        fontSize={23} fontStyle="bold" fill="#F6BC59"
-                        align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Text x={697} y={915} width={100} text="PISTE"
-                        fontSize={23} fontStyle="bold" fill="#F6BC59"
-                        align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
-                        shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
-                    <Circle x={540} y={970} radius={65}
-                        fillLinearGradientStartPoint={{ x: -65, y: -65 }}
-                        fillLinearGradientEndPoint={{ x: 65, y: 65 }}
-                        fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
-                        stroke="#F6BC59" strokeWidth={4}
-                        shadowColor="rgba(246,188,89,0.5)" shadowBlur={lowPowerMode ? 10 : 32} />
-                    <Circle x={540} y={970} radius={56}
-                        fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
-                    <Text x={474} y={956} width={131} text="TIGER"
-                        fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
-                        fontFamily="Georgia, serif" letterSpacing={5}
-                        shadowColor="rgba(246,188,89,1.0)" shadowBlur={22} />
+                        {/* ── Stage vertical ──────────────────────────────────── */}
+                        <Rect x={460} y={380} width={160} height={340}
+                            fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                            fillLinearGradientEndPoint={{ x: 160, y: 0 }}
+                            fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#262018']}
+                            stroke="#F6BC59" strokeWidth={3} />
+                        <Text x={555} y={485} width={131} text="STAGE"
+                            fontSize={25} fontStyle="bold" fill="#F6BC59" align="center"
+                            rotation={90} fontFamily="Georgia, serif" letterSpacing={7}
+                            shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
 
-                    {/* ── Red accent dividers ─────────────────────────────── */}
-                    <Rect x={152} y={845} width={45} height={4} fill="#dc2626" cornerRadius={2}
-                        shadowColor="#dc2626" shadowBlur={7} />
-                    <Rect x={883} y={1560} width={45} height={7} fill="#dc2626" cornerRadius={2}
-                        shadowColor="#dc2626" shadowBlur={7} />
+                        {/* ── Piste ───────────────────────────────────────────── */}
+                        <Rect x={340} y={860} width={400} height={220}
+                            fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+                            fillLinearGradientEndPoint={{ x: 0, y: 220 }}
+                            fillLinearGradientColorStops={[0, '#262018', 0.5, '#141008', 1, '#0A0806']}
+                            stroke="#F6BC59" strokeWidth={3} />
+                        <Rect x={342} y={862} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                        <Rect x={342} y={1076} width={396} height={2} fill="rgba(246,188,89,0.40)" />
+                        <Text x={406} y={915} width={100} text="PISTE"
+                            fontSize={23} fontStyle="bold" fill="#F6BC59"
+                            align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
+                            shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+                        <Text x={697} y={915} width={100} text="PISTE"
+                            fontSize={23} fontStyle="bold" fill="#F6BC59"
+                            align="center" rotation={90} fontFamily="Georgia, serif" letterSpacing={5}
+                            shadowColor="rgba(246,188,89,0.9)" shadowBlur={14} />
+                        <Circle x={540} y={970} radius={65}
+                            fillLinearGradientStartPoint={{ x: -65, y: -65 }}
+                            fillLinearGradientEndPoint={{ x: 65, y: 65 }}
+                            fillLinearGradientColorStops={[0, '#302818', 0.5, '#1E1810', 1, '#0E0C08']}
+                            stroke="#F6BC59" strokeWidth={4}
+                            shadowColor="rgba(246,188,89,0.5)" shadowBlur={lowPowerMode ? 10 : 32} />
+                        <Circle x={540} y={970} radius={56}
+                            fill="transparent" stroke="rgba(246,188,89,0.30)" strokeWidth={2} />
+                        <Text x={474} y={956} width={131} text="TIGER"
+                            fontSize={24} fontStyle="bold" fill="#F6BC59" align="center"
+                            fontFamily="Georgia, serif" letterSpacing={5}
+                            shadowColor="rgba(246,188,89,1.0)" shadowBlur={22} />
+
+                        {/* ── Red accent dividers ─────────────────────────────── */}
+                        <Rect x={152} y={845} width={45} height={4} fill="#dc2626" cornerRadius={2}
+                            shadowColor="#dc2626" shadowBlur={7} />
+                        <Rect x={883} y={1560} width={45} height={7} fill="#dc2626" cornerRadius={2}
+                            shadowColor="#dc2626" shadowBlur={7} />
+                    </Group>
 
                     {/* ── Tables (draggable) ──────────────────────────────── */}
                     {tables.map((table) => {
@@ -240,22 +277,26 @@ export default function AdminFloorMap({
                         const isSelected = selectedTableId === table.id;
                         const isSmall = w <= 80;
                         const stops = FREE_STOPS[table.zone_type] ?? FREE_STOPS.Orange;
+                        // Display position = stored position + LEFT_EXT offset
+                        const displayX = x + LEFT_EXT;
 
                         return (
                             <Group
                                 key={table.id}
-                                x={x} y={y}
+                                x={displayX} y={y}
                                 draggable
                                 dragBoundFunc={(pos) => ({
+                                    // Allow full canvas width (including left zone for future tables)
                                     x: Math.max(5 * scale, Math.min(pos.x, (CANVAS_W - w - 5) * scale)),
                                     y: Math.max(5 * scale, Math.min(pos.y, (CANVAS_H - h - 5) * scale)),
                                 })}
                                 onDragEnd={(e) => {
-                                    // e.target.x/y() are in canvas (unscaled) coords
-                                    const nx = snap(Math.max(5, Math.min(e.target.x(), CANVAS_W - w - 5)));
+                                    // e.target.x/y() are in canvas (unscaled) display coords
+                                    const dx = snap(Math.max(5, Math.min(e.target.x(), CANVAS_W - w - 5)));
                                     const ny = snap(Math.max(5, Math.min(e.target.y(), CANVAS_H - h - 5)));
-                                    e.target.position({ x: nx, y: ny }); // snap visually
-                                    onTableMove(table.id, nx, ny);
+                                    e.target.position({ x: dx, y: ny }); // snap visually
+                                    // Store as original coord (subtract LEFT_EXT offset)
+                                    onTableMove(table.id, dx - LEFT_EXT, ny);
                                 }}
                                 onDragStart={onUserInteract}
                                 onClick={(e) => {

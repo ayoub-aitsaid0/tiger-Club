@@ -65,6 +65,7 @@ class Reservation(db.Model):
     date_reservation = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), default="reserved")  # reserved | occupied | cancelled
     notes = db.Column(db.Text, nullable=True)
+    operator_name = db.Column(db.String(100), nullable=True)  # daily shift operator
     created_by_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -86,10 +87,29 @@ class Reservation(db.Model):
             "date_reservation": self.date_reservation.isoformat(),
             "status": self.status,
             "notes": self.notes,
+            "operator_name": self.operator_name,
             "created_by_user_id": self.created_by_user_id,
             "created_by_username": self.caissier.username if self.caissier else None,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
+        }
+
+
+class DailyShift(db.Model):
+    __tablename__ = "daily_shifts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, unique=True, nullable=False)
+    operator_name = db.Column(db.String(100), nullable=False)
+    set_at = db.Column(db.DateTime, default=datetime.utcnow)
+    set_by_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "date": self.date.isoformat(),
+            "operator_name": self.operator_name,
+            "set_at": self.set_at.isoformat(),
         }
 
 

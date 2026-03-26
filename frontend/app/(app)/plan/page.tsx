@@ -4,8 +4,9 @@ import dynamic from 'next/dynamic';
 import api from '@/lib/api';
 import { useAppStore, TableStatus } from '@/lib/store';
 import ReservationModal from '@/components/ReservationModal';
+import ShiftModal from '@/components/ShiftModal';
 import toast from 'react-hot-toast';
-import { Link2, Link2Off, RefreshCw, Calendar, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Link2, Link2Off, RefreshCw, Calendar, X, ChevronDown, ChevronUp, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const FloorMap = dynamic(() => import('@/components/FloorMap'), { ssr: false });
@@ -17,6 +18,12 @@ const getLegend = (t: any) => [
     { label: t('plan.legend.vip'), color: '#7C3360' },
 ];
 
+// Returns true if local time is 18:30 or later
+function isAfterShiftStart() {
+    const now = new Date();
+    return now.getHours() > 18 || (now.getHours() === 18 && now.getMinutes() >= 30);
+}
+
 export default function PlanPage() {
     const { t } = useTranslation();
     const LEGEND = getLegend(t);
@@ -25,10 +32,14 @@ export default function PlanPage() {
         tableStatuses, setTableStatuses,
         linkMode, toggleLinkMode,
         linkedTables, clearLinkedTables,
+        operatorName, setOperatorName,
     } = useAppStore();
     const [loading, setLoading] = useState(false);
     const [modalTables, setModalTables] = useState<TableStatus[] | null>(null);
-    const [controlsOpen, setControlsOpen] = useState(false);
+    const [controlsOpen, setControlsOpen] = useState(true);
+    const [showShiftModal, setShowShiftModal] = useState(false);
+    // Operator shown in the badge for the currently viewed date (may differ from today)
+    const [dateOperatorName, setDateOperatorName] = useState<string | null>(null);
 
     const fetchStatuses = useCallback(async () => {
         setLoading(true);
@@ -41,6 +52,48 @@ export default function PlanPage() {
             setLoading(false);
         }
     }, [selectedDate, setTableStatuses, t]);
+
+    // Service date: before 18:30 we're still in yesterday's shift period
+    const todayStr = (() => {
+        const now = new Date();
+        const d = new Date(now);
+        if (now.getHours() < 18 || (now.getHours() === 18 && now.getMinutes() < 30)) {
+            d.setDate(d.getDate() - 1);
+        }
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    })();
+
+    // Fetch shift for the currently viewed date (runs on every date change)
+    useEffect(() => {
+        async function fetchShift() {
+            try {
+                const { data } = await api.get(`/shifts/today?date=${selectedDate}`);
+                const name: string | null = data?.operator_name ?? null;
+                setDateOperatorName(name);
+                // Only update the global store + prompt when viewing today
+                if (selectedDate === todayStr) {
+                    if (name) {
+                        setOperatorName(name);
+                    } else if (isAfterShiftStart()) {
+                        setShowShiftModal(true);
+                    }
+                }
+            } catch {
+                setDateOperatorName(null);
+            }
+        }
+        fetchShift();
+    }, [selectedDate, todayStr, setOperatorName]);
+
+    // Poll every 60s: show modal as soon as clock hits 18:30 with no operator for today
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (selectedDate === todayStr && !operatorName && isAfterShiftStart()) {
+                setShowShiftModal(true);
+            }
+        }, 60_000);
+        return () => clearInterval(interval);
+    }, [selectedDate, todayStr, operatorName]);
 
     useEffect(() => { fetchStatuses(); }, [fetchStatuses]);
 
@@ -67,6 +120,34 @@ export default function PlanPage() {
 
     const controlBarContent = (
         <>
+            {/* Operator badge */}
+            {(() => {
+                const isToday = selectedDate === todayStr;
+                const canPrompt = isToday && !dateOperatorName;
+                const hasName = !!dateOperatorName;
+                return (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        background: hasName ? 'rgba(200,168,75,0.1)' : isToday ? 'rgba(255,100,50,0.08)' : 'rgba(100,100,120,0.1)',
+                        border: `1px solid ${hasName ? 'rgba(200,168,75,0.3)' : isToday ? 'rgba(255,100,50,0.25)' : 'rgba(100,100,120,0.2)'}`,
+                        borderRadius: 8, padding: '5px 10px',
+                        cursor: canPrompt ? 'pointer' : 'default',
+                        flexShrink: 0,
+                    }} onClick={() => { if (canPrompt) setShowShiftModal(true); }}>
+                        <User size={12} color={hasName ? '#c8a84b' : isToday ? '#f97316' : '#666680'} />
+                        <span style={{
+                            fontSize: '0.75rem', fontWeight: 700,
+                            color: hasName ? '#f5e6b8' : isToday ? '#f97316' : '#666680',
+                            whiteSpace: 'nowrap', letterSpacing: '0.03em',
+                        }}>
+                            {hasName ? dateOperatorName : isToday ? 'Prise de service ?' : '—'}
+                        </span>
+                    </div>
+                );
+            })()}
+
+            <div style={{ width: 1, height: 20, background: 'rgba(246,188,89,0.12)', flexShrink: 0 }} />
+
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 7,
                 background: 'rgba(246,188,89,0.06)',
@@ -260,6 +341,16 @@ export default function PlanPage() {
                     date={selectedDate}
                     onClose={() => { setModalTables(null); clearLinkedTables(); }}
                     onSuccess={fetchStatuses}
+                />
+            )}
+
+            {/* ── Daily Shift Modal ────────────────────────────────── */}
+            {showShiftModal && (
+                <ShiftModal
+                    onConfirmed={(name) => {
+                        setOperatorName(name);
+                        setShowShiftModal(false);
+                    }}
                 />
             )}
 

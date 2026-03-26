@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.models import Reservation, Table, AuditLog, User
+from app.models import Reservation, Table, AuditLog, User, DailyShift
 from app import db
 from datetime import date, datetime
 from functools import wraps
@@ -53,6 +53,8 @@ def create_reservation():
                 "error": f"Table(s) {list(overlap)} déjà réservée(s) pour cette date"
             }), 409
 
+    today_shift = DailyShift.query.filter_by(date=res_date).first()
+
     reservation = Reservation(
         table_ids=table_ids,
         customer_name=data.get("customer_name", "").strip(),
@@ -63,6 +65,7 @@ def create_reservation():
         date_reservation=res_date,
         status="reserved",
         notes=data.get("notes", ""),
+        operator_name=today_shift.operator_name if today_shift else None,
         created_by_user_id=user_id,
     )
     db.session.add(reservation)
@@ -84,6 +87,8 @@ def create_reservation():
 def list_reservations():
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Utilisateur introuvable"}), 401
 
     query = Reservation.query
 
@@ -110,6 +115,8 @@ def list_reservations():
 def update_reservation(res_id):
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Utilisateur introuvable"}), 401
     reservation = Reservation.query.get_or_404(res_id)
 
     if user.role != "admin" and reservation.created_by_user_id != user_id:
@@ -142,6 +149,8 @@ def update_reservation(res_id):
 def cancel_reservation(res_id):
     user_id = int(get_jwt_identity())
     user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Utilisateur introuvable"}), 401
     reservation = Reservation.query.get_or_404(res_id)
 
     if user.role != "admin" and reservation.created_by_user_id != user_id:
