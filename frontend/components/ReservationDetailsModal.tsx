@@ -29,9 +29,9 @@ interface Props {
 const getStatusColor = (status: string): { color: string; bg: string } => {
     switch (status) {
         case 'reserved':
-            return { color: '#ef4444', bg: 'rgba(239,68,68,0.1)' };
+            return { color: '#1B9684', bg: 'rgba(27,150,132,0.12)' };
         case 'occupied':
-            return { color: '#eab308', bg: 'rgba(234,179,8,0.1)' };
+            return { color: '#D89718', bg: 'rgba(216,151,24,0.12)' };
         case 'cancelled':
             return { color: '#64748b', bg: 'rgba(100,116,139,0.1)' };
         default:
@@ -51,13 +51,6 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        });
-    };
-
-    const formatTime = (dateStr: string) => {
-        return new Date(dateStr).toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit'
         });
     };
 
@@ -92,6 +85,8 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 style={s.modal}
                 className="reservation-details-modal"
             >
+                <div className="reservation-details-drag-handle" />
+
                 {/* Header */}
                 <div style={s.header}>
                     <div>
@@ -104,7 +99,7 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 </div>
 
                 {/* Content */}
-                <div className="reservation-details-content" style={{ flex: 1, overflow: 'auto', paddingBottom: 20 }}>
+                <div className="reservation-details-content" style={{ flex: 1, overflow: 'auto', paddingBottom: 20, paddingInline: 24 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         {/* Status Badge */}
                         <div style={{
@@ -326,6 +321,8 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 <div className="reservation-details-footer" style={{
                     padding: '16px 0',
                     borderTop: '1px solid rgba(246,188,89,0.12)',
+                    background: 'linear-gradient(180deg, rgba(12,10,18,0.4), rgba(12,10,18,0.94))',
+                    backdropFilter: 'blur(6px)',
                     display: 'flex',
                     gap: 10
                 }}>

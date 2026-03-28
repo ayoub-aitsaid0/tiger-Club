@@ -26,8 +26,8 @@ interface Reservation {
 }
 
 const getStatusStyles = (t: any): Record<string, { color: string; bg: string; label: string }> => ({
-    reserved: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', label: t('reservations.status.reserved') },
-    occupied: { color: '#eab308', bg: 'rgba(234,179,8,0.1)', label: t('reservations.status.occupied') },
+    reserved: { color: '#1B9684', bg: 'rgba(27,150,132,0.12)', label: t('reservations.status.reserved') },
+    occupied: { color: '#D89718', bg: 'rgba(216,151,24,0.12)', label: t('reservations.status.occupied') },
     cancelled: { color: '#64748b', bg: 'rgba(100,116,139,0.1)', label: t('reservations.status.cancelled') },
 });
 

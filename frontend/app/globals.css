@@ -166,6 +166,7 @@ input:focus, select:focus, textarea:focus {
 
   .reservation-details-overlay {
     align-items: flex-end !important;
+    z-index: 1200 !important;
   }
   .reservation-details-modal {
     width: 100% !important;
@@ -176,10 +177,22 @@ input:focus, select:focus, textarea:focus {
     border-right: none !important;
     border-bottom: none !important;
   }
+  .reservation-details-drag-handle {
+    width: 44px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+    margin: 10px auto 2px;
+    flex-shrink: 0;
+  }
   .reservation-details-content {
     padding: 14px 14px 0 !important;
+    overscroll-behavior: contain;
   }
   .reservation-details-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
     padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
