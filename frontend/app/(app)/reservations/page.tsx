@@ -57,13 +57,21 @@ export default function ReservationsPage() {
     useEffect(() => { fetchReservations(); }, [fetchReservations]);
 
     const filtered = reservations.filter(r => {
-        const matchesSearch = r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-            r.customer_phone?.includes(search);
-        
-        const matchesTable = !tableFilter || 
-            r.table_numbers.some(tn => tn.includes(tableFilter)) ||
-            r.table_ids.some(tid => tid.toString().includes(tableFilter));
-        
+        const normalizedSearch = search.trim().toLowerCase();
+        const normalizedTableFilter = tableFilter.trim().toLowerCase();
+
+        const matchesSearch = !normalizedSearch ||
+            r.customer_name.toLowerCase().includes(normalizedSearch) ||
+            r.customer_phone?.includes(normalizedSearch);
+
+        // Match by displayed table number only (never by internal table id).
+        // "12" should match "12" and variants like "12.B", but not unrelated ids.
+        const matchesTable = !normalizedTableFilter ||
+            r.table_numbers.some((tn) => {
+                const n = tn.toLowerCase();
+                return n === normalizedTableFilter || n.startsWith(`${normalizedTableFilter}.`);
+            });
+
         return matchesSearch && matchesTable;
     });
 

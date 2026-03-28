@@ -162,15 +162,14 @@ def get_reservation_by_table(table_id):
     except ValueError:
         return jsonify({"error": "Format de date invalide"}), 400
 
-    # Find reservation that contains this table_id on this date
-    reservations = Reservation.query.filter(
+    reservation = Reservation.query.filter(
         Reservation.date_reservation == res_date,
-        Reservation.status != "cancelled"
-    ).all()
+        Reservation.status != "cancelled",
+        Reservation.table_ids.any(table_id)
+    ).order_by(Reservation.created_at.desc()).first()
 
-    for reservation in reservations:
-        if table_id in reservation.table_ids:
-            return jsonify(reservation.to_dict()), 200
+    if reservation:
+        return jsonify(reservation.to_dict()), 200
 
     return jsonify({"error": "Aucune réservation trouvée"}), 404
 

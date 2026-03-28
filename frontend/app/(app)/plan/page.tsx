@@ -118,6 +118,8 @@ export default function PlanPage() {
     useEffect(() => { fetchStatuses(); }, [fetchStatuses]);
 
     const handleTableClick = (table: TableStatus) => {
+        if (fetchingReservation) return;
+
         if (table.status === 'free') {
             setModalTables([table]);
         } else {
@@ -127,10 +129,26 @@ export default function PlanPage() {
                 .then(({ data }) => {
                     setViewingReservation(data);
                 })
-                .catch((err) => {
+                .catch(async () => {
+                    // Fallback: use date reservation list and match by id or displayed number.
+                    try {
+                        const { data } = await api.get(`/reservations?date=${selectedDate}`);
+                        const fallback = (data || []).find((r: Reservation) =>
+                            r.table_ids?.includes(table.id) ||
+                            r.table_numbers?.some((n) => n === table.table_number)
+                        );
+
+                        if (fallback) {
+                            setViewingReservation(fallback);
+                            return;
+                        }
+                    } catch {
+                        // Keep user feedback below.
+                    }
+
                     toast.error(
-                        t('plan.messages.alreadyTaken', { 
-                            number: table.table_number, 
+                        t('plan.messages.alreadyTaken', {
+                            number: table.table_number,
                             status: table.status === 'reserved' ? t('plan.status.reserved') : t('plan.status.occupied')
                         })
                     );
