@@ -45,6 +45,7 @@
   "reservations": {
     "title": "الحجوزات",
     "searchPlaceholder": "الاسم أو رقم الهاتف...",
+    "tableFilter": "رقم الطاولة...",
     "loading": "جارٍ التحميل...",
     "noData": "لم يتم العثور على حجوزات",
     "noPhone": "بدون رقم هاتف",
@@ -287,5 +288,23 @@
       "deleteError": "لا يمكن الحذف (حجوزات نشطة؟)",
       "enterNumber": "الرجاء إدخال رقم الطاولة"
     }
+  },
+  "reservationDetails": {
+    "title": "تفاصيل الحجز",
+    "customer": "معلومات الزبون",
+    "customerName": "اسم الزبون",
+    "phone": "رقم الهاتف",
+    "date": "تاريخ الحجز",
+    "table": "الطاولة",
+    "totalPrice": "السعر الإجمالي",
+    "advancePaid": "العربون المدفوع",
+    "balance": "المتبقي للدفع",
+    "paymentMethod": "طريقة الدفع",
+    "createdBy": "تم الإنشاء بواسطة",
+    "operator": "مشغل الخدمة",
+    "notes": "الملاحظات"
+  },
+  "common": {
+    "close": "إغلاق"
   }
 }

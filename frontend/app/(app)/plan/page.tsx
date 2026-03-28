@@ -4,12 +4,30 @@ import dynamic from 'next/dynamic';
 import api from '@/lib/api';
 import { useAppStore, TableStatus } from '@/lib/store';
 import ReservationModal from '@/components/ReservationModal';
+import ReservationDetailsModal from '@/components/ReservationDetailsModal';
 import ShiftModal from '@/components/ShiftModal';
 import toast from 'react-hot-toast';
 import { Link2, Link2Off, RefreshCw, Calendar, X, ChevronDown, ChevronUp, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const FloorMap = dynamic(() => import('@/components/FloorMap'), { ssr: false });
+
+interface Reservation {
+    id: number;
+    table_ids: number[];
+    table_numbers: string[];
+    customer_name: string;
+    customer_phone: string;
+    total_price: number;
+    advance_paid: number;
+    payment_method: string;
+    date_reservation: string;
+    status: string;
+    notes: string;
+    operator_name: string | null;
+    created_by_username: string;
+    created_at: string;
+}
 
 const getLegend = (t: any) => [
     { label: t('plan.legend.free'), color: '#F37950' },
@@ -36,6 +54,8 @@ export default function PlanPage() {
     } = useAppStore();
     const [loading, setLoading] = useState(false);
     const [modalTables, setModalTables] = useState<TableStatus[] | null>(null);
+    const [viewingReservation, setViewingReservation] = useState<Reservation | null>(null);
+    const [fetchingReservation, setFetchingReservation] = useState(false);
     const [controlsOpen, setControlsOpen] = useState(true);
     const [showShiftModal, setShowShiftModal] = useState(false);
     // Operator shown in the badge for the currently viewed date (may differ from today)
@@ -98,13 +118,25 @@ export default function PlanPage() {
     useEffect(() => { fetchStatuses(); }, [fetchStatuses]);
 
     const handleTableClick = (table: TableStatus) => {
-        if (table.status !== 'free') {
-            toast.error(
-                t('plan.messages.alreadyTaken', { number: table.table_number, status: table.status === 'reserved' ? t('plan.status.reserved') : t('plan.status.occupied') })
-            );
-            return;
+        if (table.status === 'free') {
+            setModalTables([table]);
+        } else {
+            // Fetch and display reservation details for reserved/occupied tables
+            setFetchingReservation(true);
+            api.get(`/reservations/by-table/${table.id}?date=${selectedDate}`)
+                .then(({ data }) => {
+                    setViewingReservation(data);
+                })
+                .catch((err) => {
+                    toast.error(
+                        t('plan.messages.alreadyTaken', { 
+                            number: table.table_number, 
+                            status: table.status === 'reserved' ? t('plan.status.reserved') : t('plan.status.occupied')
+                        })
+                    );
+                })
+                .finally(() => setFetchingReservation(false));
         }
-        setModalTables([table]);
     };
 
     const handleGroupReserve = () => {
@@ -341,6 +373,14 @@ export default function PlanPage() {
                     date={selectedDate}
                     onClose={() => { setModalTables(null); clearLinkedTables(); }}
                     onSuccess={fetchStatuses}
+                />
+            )}
+
+            {/* ── Reservation Details Modal ──────────────────────── */}
+            {viewingReservation && (
+                <ReservationDetailsModal
+                    reservation={viewingReservation}
+                    onClose={() => setViewingReservation(null)}
                 />
             )}
 

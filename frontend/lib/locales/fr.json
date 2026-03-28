@@ -45,6 +45,7 @@
   "reservations": {
     "title": "RÉSERVATIONS",
     "searchPlaceholder": "Nom ou téléphone...",
+    "tableFilter": "Numéro de table...",
     "loading": "Chargement...",
     "noData": "Aucune réservation trouvée",
     "noPhone": "Sans téléphone",
@@ -287,5 +288,23 @@
       "deleteError": "Impossible de supprimer (réservations actives ?)",
       "enterNumber": "Entrez un numéro de table"
     }
+  },
+  "reservationDetails": {
+    "title": "Détails de la Réservation",
+    "customer": "Informations Client",
+    "customerName": "Nom du Client",
+    "phone": "Téléphone",
+    "date": "Date de Réservation",
+    "table": "Table",
+    "totalPrice": "Prix Total",
+    "advancePaid": "Avance Payée",
+    "balance": "Reste à Payer",
+    "paymentMethod": "Mode de Paiement",
+    "createdBy": "Créée par",
+    "operator": "Opérateur de Service",
+    "notes": "Notes"
+  },
+  "common": {
+    "close": "Fermer"
   }
 }

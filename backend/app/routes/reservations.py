@@ -144,6 +144,37 @@ def update_reservation(res_id):
     return jsonify(reservation.to_dict()), 200
 
 
+@reservations_bp.route("/by-table/<int:table_id>", methods=["GET"])
+@jwt_required()
+def get_reservation_by_table(table_id):
+    """Fetch a non-cancelled reservation for a specific table on a given date"""
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "Utilisateur introuvable"}), 401
+
+    date_str = request.args.get("date")
+    if not date_str:
+        return jsonify({"error": "Paramètre 'date' requis"}), 400
+
+    try:
+        res_date = date.fromisoformat(date_str)
+    except ValueError:
+        return jsonify({"error": "Format de date invalide"}), 400
+
+    # Find reservation that contains this table_id on this date
+    reservations = Reservation.query.filter(
+        Reservation.date_reservation == res_date,
+        Reservation.status != "cancelled"
+    ).all()
+
+    for reservation in reservations:
+        if table_id in reservation.table_ids:
+            return jsonify(reservation.to_dict()), 200
+
+    return jsonify({"error": "Aucune réservation trouvée"}), 404
+
+
 @reservations_bp.route("/<int:res_id>", methods=["DELETE"])
 @jwt_required()
 def cancel_reservation(res_id):

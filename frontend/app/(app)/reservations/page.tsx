@@ -39,6 +39,7 @@ export default function ReservationsPage() {
     const [loading, setLoading] = useState(false);
     const [dateFilter, setDateFilter] = useState('');
     const [search, setSearch] = useState('');
+    const [tableFilter, setTableFilter] = useState('');
     const [editRes, setEditRes] = useState<Reservation | null>(null);
     const [editForm, setEditForm] = useState<Partial<Reservation>>({});
 
@@ -55,10 +56,16 @@ export default function ReservationsPage() {
 
     useEffect(() => { fetchReservations(); }, [fetchReservations]);
 
-    const filtered = reservations.filter(r =>
-        r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-        r.customer_phone?.includes(search)
-    );
+    const filtered = reservations.filter(r => {
+        const matchesSearch = r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+            r.customer_phone?.includes(search);
+        
+        const matchesTable = !tableFilter || 
+            r.table_numbers.some(tn => tn.includes(tableFilter)) ||
+            r.table_ids.some(tid => tid.toString().includes(tableFilter));
+        
+        return matchesSearch && matchesTable;
+    });
 
     const handleSaveEdit = async () => {
         if (!editRes) return;
@@ -107,6 +114,19 @@ export default function ReservationsPage() {
                             style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none', width: '100%', WebkitAppearance: 'none' }}
                         />
                         {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}><X size={14} /></button>}
+                    </div>
+
+                    {/* Table Filter */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '0 1 140px' }}>
+                        <Search size={16} color="#F6BC59" opacity={0.8} />
+                        <input 
+                            type="text"
+                            placeholder={t('reservations.tableFilter')}
+                            value={tableFilter} 
+                            onChange={e => setTableFilter(e.target.value)}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', width: '100%' }} 
+                        />
+                        {tableFilter && <button onClick={() => setTableFilter('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}><X size={14} /></button>}
                     </div>
 
                     {/* Date filter */}
