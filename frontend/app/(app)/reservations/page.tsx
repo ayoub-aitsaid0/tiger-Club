@@ -111,37 +111,37 @@ export default function ReservationsPage() {
                     {t('reservations.title')}
                 </h1>
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, flex: '1 1 300px', justifyItems: 'flex-end', justifyContent: 'flex-end' }}>
+                <div className="reservations-filters" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, flex: '1 1 300px', justifyItems: 'flex-end', justifyContent: 'flex-end' }}>
                     {/* Search */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '1 1 200px', maxWidth: 350 }}>
+                    <div className="reservations-filter reservations-filter-search" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '1 1 200px', maxWidth: 350 }}>
                         <Search size={16} color="#F6BC59" opacity={0.8} />
                         <input
                             placeholder={t('reservations.searchPlaceholder')}
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.9rem', outline: 'none', width: '100%', WebkitAppearance: 'none' }}
+                            style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.95rem', outline: 'none', width: '100%', WebkitAppearance: 'none' }}
                         />
                         {search && <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}><X size={14} /></button>}
                     </div>
 
                     {/* Table Filter */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '0 1 140px' }}>
+                    <div className="reservations-filter reservations-filter-table" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '0 1 140px' }}>
                         <Search size={16} color="#F6BC59" opacity={0.8} />
                         <input 
                             type="text"
                             placeholder={t('reservations.tableFilter')}
                             value={tableFilter} 
                             onChange={e => setTableFilter(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', width: '100%' }} 
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', width: '100%' }} 
                         />
                         {tableFilter && <button onClick={() => setTableFilter('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}><X size={14} /></button>}
                     </div>
 
                     {/* Date filter */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '0 1 180px' }}>
+                    <div className="reservations-filter reservations-filter-date" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-card)', border: '1px solid rgba(246,188,89,0.15)', borderRadius: 12, padding: '10px 14px', flex: '0 1 180px' }}>
                         <Calendar size={16} color="#F6BC59" opacity={0.8} />
                         <input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none', width: '100%' }} />
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: '0.95rem', outline: 'none', width: '100%' }} />
                         {dateFilter && <button onClick={() => setDateFilter('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', display: 'flex' }}><X size={14} /></button>}
                     </div>
                 </div>

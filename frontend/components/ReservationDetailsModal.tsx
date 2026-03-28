@@ -81,6 +81,7 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             style={s.overlay}
+            className="reservation-details-overlay"
             onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <motion.div
@@ -89,6 +90,7 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 exit={{ scale: 0.95, opacity: 0, y: 20 }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 style={s.modal}
+                className="reservation-details-modal"
             >
                 {/* Header */}
                 <div style={s.header}>
@@ -102,7 +104,7 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 </div>
 
                 {/* Content */}
-                <div style={{ flex: 1, overflow: 'auto', paddingBottom: 20 }}>
+                <div className="reservation-details-content" style={{ flex: 1, overflow: 'auto', paddingBottom: 20 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                         {/* Status Badge */}
                         <div style={{
@@ -321,7 +323,7 @@ export default function ReservationDetailsModal({ reservation, onClose }: Props)
                 </div>
 
                 {/* Footer - Close Button */}
-                <div style={{
+                <div className="reservation-details-footer" style={{
                     padding: '16px 0',
                     borderTop: '1px solid rgba(246,188,89,0.12)',
                     display: 'flex',

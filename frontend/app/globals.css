@@ -150,6 +150,44 @@ input:focus, select:focus, textarea:focus {
   .desktop-only { display: none !important; }
   .mobile-only { display: flex !important; }
   .plan-mobile-shelf { display: block !important; }
+
+  .reservations-filters {
+    width: 100%;
+    justify-content: stretch !important;
+    gap: 10px !important;
+  }
+  .reservations-filter {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+  .reservations-filter input {
+    font-size: 16px !important;
+  }
+
+  .reservation-details-overlay {
+    align-items: flex-end !important;
+  }
+  .reservation-details-modal {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: min(92vh, 780px) !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+  .reservation-details-content {
+    padding: 14px 14px 0 !important;
+  }
+  .reservation-details-footer {
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .reservation-details-modal {
+    max-height: 94vh !important;
+  }
 }
 
 /* Keyframes */
