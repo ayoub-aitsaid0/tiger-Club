@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Calendar, CalendarDays, BarChart3, TrendingUp, Sparkles } from 'lucide-react';
+import { Calendar, CalendarDays, TrendingUp, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    const maxTotal = Math.max(...breakdown.map(d => d.total), 1);
+    const maxTotal = Math.max(...breakdown.map(d => d.count), 1);
 
     return (
         <motion.div 
@@ -67,17 +67,13 @@ export default function DashboardPage() {
                         >
                             <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, background: `radial-gradient(circle, ${color}20 0%, transparent 60%)`, filter: 'blur(30px)', pointerEvents: 'none' }} />
                             
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, position: 'relative', zIndex: 1 }}>
                                 <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                     {icon} {label}
                                 </span>
-                                <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '20px', background: `${color}10`, color, fontWeight: 700, border: `1px solid ${color}30`, boxShadow: `0 0 16px ${color}15`, letterSpacing: '0.05em' }}>{data.count} {t('dashboard.reservations')}</span>
                             </div>
                             <div className="luxury-text" style={{ fontSize: '2.8rem', marginBottom: 8, lineHeight: 1, position: 'relative', zIndex: 1, background: `linear-gradient(135deg, #fff, ${color})`, WebkitBackgroundClip: 'text', textShadow: `0 4px 24px ${color}30` }}>
-                                {data.total.toLocaleString('fr-FR')} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', textShadow: 'none', letterSpacing: '0.05em' }}>{t('dashboard.currency')}</span>
-                            </div>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500, marginTop: 12, position: 'relative', zIndex: 1, letterSpacing: '0.05em' }}>
-                                {t('dashboard.advances')} <span style={{ color: '#fff', fontWeight: 600 }}>{data.advance.toLocaleString('fr-FR')} {t('dashboard.currency')}</span>
+                                {data.count} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', textShadow: 'none', letterSpacing: '0.05em' }}>{t('dashboard.reservations')}</span>
                             </div>
                         </motion.div>
                     ))}
@@ -132,16 +128,14 @@ export default function DashboardPage() {
                 ) : (
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, flex: 1, minHeight: 220, overflowX: 'auto', paddingBottom: 8, paddingLeft: 4, paddingRight: 4, WebkitOverflowScrolling: 'touch' }}>
                         {breakdown.map((d) => {
-                            const cashH = (d.cash / maxTotal) * 100; // Intentionally 100% to fill container nicely
-                            const tpeH = (d.tpe / maxTotal) * 100;
+                            const barH = (d.count / maxTotal) * 100;
                             return (
                                 <div key={d.date} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 60, flex: 1, height: '100%' }}>
                                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 'auto', marginBottom: 4, whiteSpace: 'nowrap', fontWeight: 600, letterSpacing: '0.02em' }}>
-                                        {d.total > 0 ? d.total.toLocaleString('fr-FR') : ''}
+                                        {d.count > 0 ? d.count : ''}
                                     </div>
                                     <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: '100%', minHeight: 180 }}>
-                                        <div style={{ width: 18, height: `${Math.max(cashH, 1)}%`, background: 'linear-gradient(to top,#1B9684,#2dd4bf)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: cashH > 5 ? '0 0 12px rgba(45,212,191,0.2)' : 'none' }} title={t('dashboard.cashTitle', { amount: d.cash })} />
-                                        <div style={{ width: 18, height: `${Math.max(tpeH, 1)}%`, background: 'linear-gradient(to top,#7C3360,#c026d3)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: tpeH > 5 ? '0 0 12px rgba(192,38,211,0.2)' : 'none' }} title={t('dashboard.tpeTitle', { amount: d.tpe })} />
+                                        <div style={{ width: 28, height: `${Math.max(barH, 1)}%`, background: 'linear-gradient(to top,#1B9684,#2dd4bf)', borderRadius: '4px 4px 0 0', transition: 'height 0.4s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: barH > 5 ? '0 0 12px rgba(45,212,191,0.2)' : 'none' }} title={`${d.count} réservations`} />
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
                                         {new Date(d.date + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}

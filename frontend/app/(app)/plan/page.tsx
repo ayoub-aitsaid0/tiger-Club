@@ -394,6 +394,36 @@ export default function PlanPage() {
                 />
             )}
 
+            {/* ── Fetching spinner (instant feedback while API loads) ── */}
+            {fetchingReservation && (
+                <div style={{
+                    position: 'fixed', inset: 0,
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(6px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1500,
+                }}>
+                    <div style={{
+                        background: 'rgba(12,10,18,0.97)',
+                        border: '1px solid rgba(200,168,75,0.25)',
+                        borderRadius: 16,
+                        padding: '32px 40px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+                        boxShadow: '0 24px 60px rgba(0,0,0,0.8)',
+                    }}>
+                        <div style={{
+                            width: 36, height: 36, borderRadius: '50%',
+                            border: '3px solid rgba(200,168,75,0.15)',
+                            borderTopColor: '#c8a84b',
+                            animation: 'spin 0.7s linear infinite',
+                        }} />
+                        <span style={{ color: '#c8a84b', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '0.08em', fontFamily: "'Outfit', sans-serif" }}>
+                            Chargement…
+                        </span>
+                    </div>
+                </div>
+            )}
+
             {/* ── Reservation Details Modal ──────────────────────── */}
             {viewingReservation && (
                 <ReservationDetailsModal

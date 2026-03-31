@@ -152,7 +152,6 @@ export default function ReservationsPage() {
                 {[
                     { label: t('reservations.stats.total'), value: filtered.length, color: 'var(--gold)', bg: 'rgba(246,188,89,0.05)' },
                     { label: t('reservations.stats.reserved'), value: filtered.filter(r => r.status === 'reserved').length, color: 'var(--red)', bg: 'rgba(239,68,68,0.05)' },
-                    ...(user?.role === 'admin' ? [{ label: t('reservations.stats.revenue'), value: filtered.reduce((s, r) => s + r.total_price, 0).toLocaleString('fr-FR') + ' DH', color: 'var(--green)', bg: 'rgba(34,197,94,0.05)' }] : []),
                 ].map(({ label, value, color, bg }, idx) => (
                     <motion.div 
                         initial={{ opacity: 0 }}
